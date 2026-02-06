@@ -5,9 +5,9 @@
 **Installation instructions**
   
   <ol>
-  <li>Clone this repository: <b>git clone https://github.com/grbaliga/djangostarter.git</b> </li>
-  <li>Go to the djangostarter folder: <b>cd djangostarter</b></li>
-  <li>Create a virtual environment (named venv): <b>python -m venv venv</b> </li>
+  <li>Clone this repository: <b>git clone https://github.com/KienM26/PPST-Senior-Project.git</b> </li>
+  <li> PC. Create a virtual environment (named venv): <b>python -m venv venv</b> </li>
+  <li> MAC. Create a virtual environment (named venv): <b>python3 -m venv venv</b> </li>
   <li>Activate the virtual environment:  
   <ol>
   <li>Mac/Linux: <b>source venv/bin/activate</b></li>
