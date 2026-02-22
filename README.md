@@ -19,5 +19,5 @@
   <li>Migrate:  <b>python manage.py migrate</b></li>
   <li>Install the fixture (test data):  <b>python manage.py shell < fixture.py</b></li>
   <li>Run the project (either from the command line using  <b>python manage.py runserver</b>) or from an IDE such as Visual Studio Code</li>
-  
+  <li>TEST: http://127.0.0.1:8000/basic/compute/5</li>
   </ol>
