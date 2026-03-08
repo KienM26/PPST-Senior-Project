@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
 import random
-from tasks.models import Project, Task
+from database.models import Project, Task
 
 # Read the URLs for NASA images
 imageurls = open("static/nasa_imageurls").readlines()
