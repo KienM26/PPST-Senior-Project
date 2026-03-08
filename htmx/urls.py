@@ -2,12 +2,17 @@ from django.urls import path
 
 from . import views
 
-app_name="htmx"
+app_name = "htmx"
 
 urlpatterns = [
 
-    # Demo page with Tailwind CSS
+    # Demo pages
     path("demo", views.demo, name="demo"),
+    path("test", views.test, name="test"),
+    path("practiceTest", views.practice_test, name="practiceTest"),
+    path("doctorPortal", views.doctor_portal, name="doctorPortal"),
+    path("SelectLanguage", views.select_language, name="SelectLanguage"),
+    path("Accessibility", views.accessibility, name="Accessibility"),
 
     # Partials URLS
     path('oneimage/', views.oneimage, name='oneimage'),
@@ -20,9 +25,9 @@ urlpatterns = [
     path('example2/', views.example2, name='example2'),
     path('example3/', views.example3, name='example3'),
     path('example4/', views.example4, name='example4'),
-    # path('tasks4project/<int:id>', views.tasks4project, name='tasks4project' ),
-    path('member4task/<int:id>', views.member4task, name='member4task' ),
-    path('tasks4project/', views.tasks4project, name='tasks4project' ),
+    
+    path('member4task/<int:id>', views.member4task, name='member4task'),
+    path('tasks4project/', views.tasks4project, name='tasks4project'),
 
     path("jsdemo", views.jsdemo, name="jsdemo"),
     path("response", views.jsresponse, name="response")
