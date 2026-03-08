@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET, require_POST
 import random
 from database.models import Project, Task
@@ -11,6 +11,113 @@ def randomimg():
         'image': random.choice(imageurls).strip()
     }
 
+ACCESSIBILITY_THEMES = {
+    "teal": {
+        "name": "Teal",
+        "swatch": "#0f9db7",
+        "header": "#0f9db7",
+        "button": "#0f9db7",
+    },
+    "orange": {
+        "name": "Orange",
+        "swatch": "#f7924a",
+        "header": "#f7924a",
+        "button": "#f7924a",
+    },
+    "navy": {
+        "name": "Navy",
+        "swatch": "#075787",
+        "header": "#075787",
+        "button": "#075787",
+    },
+    "purple": {
+        "name": "Purple",
+        "swatch": "#9b69de",
+        "header": "#9b69de",
+        "button": "#9b69de",
+    },
+}
+
+ACCESSIBILITY_TEXT = {
+    "en": {
+        "title": "Accessibility",
+        "prompt": "Choose the Colors You can see the Best",
+        "change": "Change",
+        "continue": "Continue",
+    },
+    "es": {
+        "title": "Accesibilidad",
+        "prompt": "Elige los colores que puedas ver mejor",
+        "change": "Cambiar",
+        "continue": "Continuar",
+    }
+}
+
+LANGUAGE_INFO = {
+    "en": {
+        "label": "English",
+        "flag": "htmx/images/flag-usa.png",
+    },
+    "es": {
+        "label": "Español",
+        "flag": "htmx/images/flag-spain.png",
+    }
+}
+
+PRACTICE_TEXT = {
+    "en": {
+        "page_title": "Test Instructions",
+        "intro_heading": "Before You Begin",
+        "intro_body": [
+            "THIS TEST MEASURES ATTENTION AND MEMORY",
+            "YOU WILL SEE OR HEAR DIFFERENT PROMPTS",
+            "FOLLOW THE ON-SCREEN INSTRUCTIONS CAREFULLY",
+            "ANSWER EACH PROMPT TO THE BEST OF YOUR ABILITY",
+            "YOUR RESPONSES REMAIN ANONYMOUS",
+        ],
+        "intro_button": "Next",
+        "practice_heading": "Practice Test",
+        "practice_body": [
+            "YOU ARE ABOUT TO BEGIN THE PPST PRACTICE TEST WITH",
+            "DIGIT STIMULI. YOU WILL GO THROUGH TWO PRACTICE",
+            "STIMULUS AND RESPONSE PAGES. PLEASE CHOOSE THE START",
+            "PRACTICE TEST BUTTON WHEN YOU ARE READY TO BEGIN.",
+        ],
+        "practice_button": "Start Practice Test",
+    },
+    "es": {
+        "page_title": "Instrucciones de la Prueba",
+        "intro_heading": "Antes de Comenzar",
+        "intro_body": [
+            "ESTA PRUEBA MIDE LA ATENCIÓN Y LA MEMORIA",
+            "VERÁ O ESCUCHARÁ DIFERENTES INDICACIONES",
+            "SIGA CUIDADOSAMENTE LAS INSTRUCCIONES EN PANTALLA",
+            "RESPONDA CADA INDICACIÓN LO MEJOR POSIBLE",
+            "SUS RESPUESTAS PERMANECEN ANÓNIMAS",
+        ],
+        "intro_button": "Siguiente",
+        "practice_heading": "Prueba de Práctica",
+        "practice_body": [
+            "ESTÁ A PUNTO DE COMENZAR LA PRUEBA DE PRÁCTICA PPST CON",
+            "ESTÍMULOS DE DÍGITOS. PASARÁ POR DOS PÁGINAS DE",
+            "ESTÍMULO Y RESPUESTA DE PRÁCTICA. ELIJA EL BOTÓN",
+            "COMENZAR PRÁCTICA CUANDO ESTÉ LISTO PARA INICIAR.",
+        ],
+        "practice_button": "Comenzar Práctica",
+    }
+}
+
+def get_current_lang(request):
+    lang = request.session.get("lang", "en")
+    if lang not in PRACTICE_TEXT:
+        lang = "en"
+    return lang
+
+def get_current_theme(request):
+    theme_key = request.session.get("theme", "teal")
+    if theme_key not in ACCESSIBILITY_THEMES:
+        theme_key = "teal"
+    return ACCESSIBILITY_THEMES[theme_key]
 
 @require_GET
 def demo(request):
@@ -21,10 +128,53 @@ def demo(request):
 def test(request):
     return render(request, 'htmx/test.html', {})
 
+@require_GET
+def practice_test_intro(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_test_intro.html", {
+        "text": PRACTICE_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_POST
+def practice_test_next(request):
+    request.session["practice_intro_seen"] = True
+    return redirect("htmx:practiceTestPage")
+
 
 @require_GET
-def practice_test(request):
-    return render(request, 'htmx/practice_test.html', {})
+def practice_test_page(request):
+    if not request.session.get("practice_intro_seen"):
+        return redirect("htmx:practiceTest")
+
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_test_ready.html", {
+        "text": PRACTICE_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+@require_POST
+def start_practice_test(request):
+    request.session["practice_test_started"] = True
+    return redirect("htmx:practiceStimulus")
+
+
+@require_GET
+def practice_stimulus(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_stimulus.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
 
 
 @require_GET
@@ -39,8 +189,72 @@ def select_language(request):
 
 @require_GET
 def accessibility(request):
-    return render(request, 'htmx/accessibility.html', {})
+    lang = request.GET.get("lang") or request.session.get("lang", "en")
+    if lang not in ACCESSIBILITY_TEXT:
+        lang = "en"
 
+    request.session["lang"] = lang
+
+    selected_theme = request.session.get("theme", "teal")
+    if selected_theme not in ACCESSIBILITY_THEMES:
+        selected_theme = "teal"
+
+    return render(request, "htmx/accessibility.html", {
+        "lang": lang,
+        "text": ACCESSIBILITY_TEXT[lang],
+        "themes": ACCESSIBILITY_THEMES,
+        "selected_theme": selected_theme,
+        "current_theme": ACCESSIBILITY_THEMES[selected_theme],
+    })
+
+@require_POST
+def save_accessibility(request):
+    lang = request.POST.get("lang", "en")
+    if lang not in ACCESSIBILITY_TEXT:
+        lang = "en"
+
+    selected_theme = request.POST.get("theme", "teal")
+    if selected_theme not in ACCESSIBILITY_THEMES:
+        selected_theme = "teal"
+
+    request.session["lang"] = lang
+    request.session["theme"] = selected_theme
+
+    return redirect("htmx:practiceTest")
+
+@require_GET
+def practice_test(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_test.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+@require_GET
+def select_voice(request):
+    lang = request.session.get("lang", "en")
+    theme = request.session.get("theme", "teal")
+    selected_voice = request.session.get("voice", "")
+
+    return render(request, 'htmx/select_voice.html', {
+        "lang": lang,
+        "theme": theme,
+        "selected_voice": selected_voice,
+    })
+
+
+@require_POST
+def save_voice(request):
+    selected_voice = request.POST.get("voice", "")
+    if selected_voice not in ["female", "male"]:
+        selected_voice = "female"
+
+    request.session["voice"] = selected_voice
+
+    return redirect("htmx:practiceIntro")
 
 @require_GET
 def demo_bootstrap(request):

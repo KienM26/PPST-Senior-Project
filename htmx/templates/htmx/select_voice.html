@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your Voice</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #efeded;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: #059bb8;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 16px 120px;
+        }
+
+        .logo-wrap {
+            position: absolute;
+            left: 38px;
+            top: 24px;
+        }
+
+        .logo-wrap img {
+            height: 46px;
+            width: auto;
+        }
+
+        .speaker-wrap {
+            position: absolute;
+            right: 200px;
+            top: 16px;
+        }
+
+        .speaker-wrap img {
+            width: 88px;
+            height: auto;
+        }
+
+        .lang-badge {
+            position: absolute;
+            right: 14px;
+            top: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lang-badge img {
+            width: 34px;
+            height: auto;
+        }
+
+        .page-title {
+            color: white;
+            font-size: 42px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .gray-line {
+            height: 20px;
+            background: #c8c3c3;
+        }
+
+        .page-content {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 22px 20px 40px;
+            text-align: center;
+        }
+
+        .voice-grid {
+            display: flex;
+            justify-content: center;
+            gap: 72px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .voice-card {
+            width: 240px;
+            background: #c9c4c4;
+            border: 2px solid #666060;
+            border-radius: 4px;
+            padding: 24px 16px 20px;
+        }
+
+        .voice-image-box {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 26px;
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .voice-option {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 58px;
+            border: none;
+            border-radius: 14px;
+            background: #059bb8;
+            color: white;
+            font-size: 22px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .voice-option.selected {
+            outline: 4px solid white;
+            box-shadow: 0 0 0 2px #2b2b2b;
+        }
+
+        .next-wrap {
+            margin-top: 42px;
+        }
+
+        .next-btn {
+            width: 210px;
+            height: 58px;
+            border: 2px solid #6f6a6a;
+            border-radius: 14px;
+            background: #f3f3f3;
+            color: #059bb8;
+            font-size: 22px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="page-title">Select Your Voice</h1>
+
+        <div class="speaker-wrap">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+        </div>
+
+        <div class="lang-badge">
+            English
+            <img src="{% static 'htmx/images/flag-usa.png' %}" alt="English">
+        </div>
+    </header>
+
+    <div class="gray-line"></div>
+
+    <main class="page-content">
+        <form method="post" action="{% url 'htmx:saveVoice' %}">
+            {% csrf_token %}
+            <input type="hidden" name="voice" id="voiceInput" value="{{ selected_voice|default:'female' }}">
+
+            <div class="voice-grid">
+                <div class="voice-card">
+                    <div class="voice-image-box">
+                        <img src="{% static 'htmx/images/voice-female.png' %}" alt="Female voice placeholder">
+                    </div>
+                    <button type="button"
+                            class="voice-option {% if selected_voice == 'female' or not selected_voice %}selected{% endif %}"
+                            data-voice="female">
+                        Female
+                    </button>
+                </div>
+
+                <div class="voice-card">
+                    <div class="voice-image-box">
+                        <img src="{% static 'htmx/images/voice-male.png' %}" alt="Male voice placeholder">
+                    </div>
+                    <button type="button"
+                            class="voice-option {% if selected_voice == 'male' %}selected{% endif %}"
+                            data-voice="male">
+                        Male
+                    </button>
+                </div>
+            </div>
+
+            <div class="next-wrap">
+                <button type="submit" class="next-btn">Next</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const voiceInput = document.getElementById("voiceInput");
+        const options = document.querySelectorAll(".voice-option");
+
+        function setVoice(value) {
+            voiceInput.value = value;
+            options.forEach(option => {
+                option.classList.toggle("selected", option.dataset.voice === value);
+            });
+        }
+
+        options.forEach(option => {
+            option.addEventListener("click", function() {
+                setVoice(this.dataset.voice);
+            });
+        });
+
+        if (!voiceInput.value) {
+            setVoice("female");
+        } else {
+            setVoice(voiceInput.value);
+        }
+    </script>
+</body>
+</html>
