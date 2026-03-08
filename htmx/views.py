@@ -7,18 +7,44 @@ from database.models import Project, Task
 imageurls = open("static/nasa_imageurls").readlines()
 
 def randomimg():
-    return { 
-            'image': random.choice(imageurls).strip()
+    return {
+        'image': random.choice(imageurls).strip()
     }
 
 
 @require_GET
 def demo(request):
-    return render(request,'htmx/demo.html', randomimg())
+    return render(request, 'htmx/demo.html', randomimg())
+
+
+@require_GET
+def test(request):
+    return render(request, 'htmx/test.html', {})
+
+
+@require_GET
+def practice_test(request):
+    return render(request, 'htmx/practice_test.html', {})
+
+
+@require_GET
+def doctor_portal(request):
+    return render(request, 'htmx/doctor_portal.html', {})
+
+
+@require_GET
+def select_language(request):
+    return render(request, 'htmx/select_language.html', {})
+
+
+@require_GET
+def accessibility(request):
+    return render(request, 'htmx/accessibility.html', {})
+
 
 @require_GET
 def demo_bootstrap(request):
-    return render(request,'htmx/demo_bootstrap.html', {})
+    return render(request, 'htmx/demo_bootstrap.html', {})
 
 
 # POST request example

@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Language</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #efeded;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background-color: #059bb8;
+            height: 116px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 42px;
+        }
+
+        .logo-wrap img {
+            height: 52px;
+            width: auto;
+            display: block;
+        }
+
+        .title {
+            color: white;
+            font-size: 46px;
+            font-weight: 800;
+            margin: 0;
+            text-align: center;
+            flex: 1;
+        }
+
+        .speaker-wrap {
+            width: 90px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .speaker-wrap img {
+            height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .purple-line {
+            height: 2px;
+            background-color: #8a5cff;
+        }
+
+        .page-content {
+            max-width: 900px;
+            margin: 24px auto 0;
+            padding: 0 20px 40px;
+        }
+
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 140px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+
+        .language-card {
+            width: 280px;
+            min-height: 360px;
+            background-color: #c9c4c4;
+            border: 2px solid #5a5555;
+            border-radius: 4px;
+            padding: 20px 18px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+        }
+
+        .flag-wrap {
+            width: 235px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+        }
+
+        .flag-wrap img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .language-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 240px;
+            height: 68px;
+            border: none;
+            border-radius: 16px;
+            background-color: #059bb8;
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.12s ease, opacity 0.12s ease;
+        }
+
+        .language-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .language-btn:active {
+            transform: translateY(1px);
+        }
+
+        @media (max-width: 900px) {
+            .top-bar {
+                padding: 0 20px;
+                gap: 10px;
+            }
+
+            .title {
+                font-size: 34px;
+            }
+
+            .speaker-wrap img {
+                height: 56px;
+            }
+
+            .cards {
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .top-bar {
+                height: auto;
+                padding: 18px 14px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .logo-wrap,
+            .speaker-wrap {
+                width: 100%;
+                justify-content: center;
+                display: flex;
+            }
+
+            .title {
+                order: 2;
+                width: 100%;
+                font-size: 30px;
+                margin: 8px 0;
+            }
+
+            .logo-wrap {
+                order: 1;
+            }
+
+            .speaker-wrap {
+                order: 3;
+            }
+
+            .language-card {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .language-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="title">Select Your Language</h1>
+
+        <div class="speaker-wrap">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Audio icon">
+        </div>
+    </header>
+
+    <div class="purple-line"></div>
+
+    <main class="page-content">
+        <section class="cards">
+            <div class="language-card">
+                <div class="flag-wrap">
+                    <img src="{% static 'htmx/images/flag-spain.png' %}" alt="Spanish flag">
+                </div>
+                <a href="{% url 'htmx:Accessibility' %}?lang=es" class="language-btn">Español</a>
+            </div>
+
+            <div class="language-card">
+                <div class="flag-wrap">
+                    <img src="{% static 'htmx/images/flag-usa.png' %}" alt="English flag">
+                </div>
+                <a href="{% url 'htmx:Accessibility' %}?lang=en" class="language-btn">English</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
