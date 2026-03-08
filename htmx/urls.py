@@ -4,32 +4,24 @@ from . import views
 
 app_name = "htmx"
 
-urlpatterns = [
+## if you want to go to a certain page go type in the name of that page
+## Ex. http://127.0.0.1:8000/htmx/selectLanguage
+## Ex. http://127.0.0.1:8000/htmx/accessibility
+## Ex.
 
-    # Demo pages
+urlpatterns = [
     path("demo", views.demo, name="demo"),
     path("test", views.test, name="test"),
     path("practiceTest", views.practice_test, name="practiceTest"),
+    path("practiceIntro", views.practice_test_intro, name="practiceIntro"),
+    path("practiceTestNext", views.practice_test_next, name="practiceTestNext"),
+    path("practiceTestPage", views.practice_test_page, name="practiceTestPage"),
+    path("startPracticeTest", views.start_practice_test, name="startPracticeTest"),
+    path("practiceStimulus", views.practice_stimulus, name="practiceStimulus"),
     path("doctorPortal", views.doctor_portal, name="doctorPortal"),
-    path("SelectLanguage", views.select_language, name="SelectLanguage"),
-    path("Accessibility", views.accessibility, name="Accessibility"),
-
-    # Partials URLS
-    path('oneimage/', views.oneimage, name='oneimage'),
-    path("answer", views.answer, name="answer"),
-    path("answer1", views.answer1, name="answer1"),
-
-    # URLs for Boostrap CSS + navbar demo
-    path("demob", views.demo_bootstrap, name="demob"),
-    path('example1/', views.example1, name='example1'),
-    path('example2/', views.example2, name='example2'),
-    path('example3/', views.example3, name='example3'),
-    path('example4/', views.example4, name='example4'),
-    
-    path('member4task/<int:id>', views.member4task, name='member4task'),
-    path('tasks4project/', views.tasks4project, name='tasks4project'),
-
-    path("jsdemo", views.jsdemo, name="jsdemo"),
-    path("response", views.jsresponse, name="response")
-
+    path("selectLanguage", views.select_language, name="SelectLanguage"),
+    path("accessibility", views.accessibility, name="Accessibility"),
+    path("saveAccessibility", views.save_accessibility, name="saveAccessibility"),
+    path("selectVoice", views.select_voice, name="selectVoice"),
+    path("saveVoice", views.save_voice, name="saveVoice"),
 ]

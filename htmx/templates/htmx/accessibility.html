@@ -1,11 +1,302 @@
-{% extends 'base.html' %}
-{% block title %}Accessibility{% endblock %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ text.title }}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-{% block content %}
-<div class="max-w-3xl mx-auto py-10 px-4">
-  <h1 class="text-3xl font-bold">Accessibility</h1>
-  <p class="mt-4 text-gray-700">Accessibility options page in your current flow.</p>
+        :root {
+            --theme-color: {{ current_theme.header }};
+            --button-color: {{ current_theme.button }};
+            --page-bg: #efeded;
+            --panel-bg: #c9c4c4;
+            --line-gray: #c8c3c3;
+            --text-dark: #111111;
+        }
 
-  <a href="{% url 'htmx:practiceTest' %}" class="inline-block mt-6 px-4 py-2 bg-green-600 text-white rounded">Continue to Practice Test</a>
-</div>
-{% endblock %}
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--page-bg);
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            height: 112px;
+            background: var(--theme-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo-wrap {
+            position: absolute;
+            left: 32px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .logo-wrap img {
+            height: 46px;
+            width: auto;
+            display: block;
+        }
+
+        .page-title {
+            color: white;
+            font-size: 58px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .gray-line {
+            height: 25px;
+            background: var(--line-gray);
+        }
+
+        .page-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 14px 20px 40px;
+        }
+
+        .prompt {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 800;
+            color: #000;
+            margin: 0 0 6px;
+            line-height: 1.15;
+        }
+
+        .card {
+            width: 640px;
+            max-width: 100%;
+            margin: 6px auto 0;
+            background: var(--panel-bg);
+            border: 2px solid #6b6666;
+            border-radius: 4px;
+            padding: 34px 28px 30px;
+        }
+
+        .swatches {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 34px;
+        }
+
+        .swatch {
+            width: 118px;
+            height: 118px;
+            border: 2px solid #2d2d2d;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, border 0.12s ease;
+        }
+
+        .swatch:hover {
+            transform: translateY(-2px);
+        }
+
+        .swatch.selected {
+            border: 6px solid white;
+            box-shadow: 0 0 0 3px #222;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .button-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            width: 240px;
+        }
+
+        .action-btn {
+            height: 68px;
+            border: none;
+            border-radius: 16px;
+            font-size: 28px;
+            cursor: pointer;
+            transition: opacity 0.12s ease, transform 0.12s ease;
+        }
+
+        .action-btn:hover {
+            opacity: 0.96;
+            transform: translateY(-1px);
+        }
+
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+
+        .change-btn {
+            background: white;
+            color: #111;
+        }
+
+        .continue-btn {
+            background: var(--button-color);
+            color: white;
+            font-weight: 700;
+        }
+
+        .speaker-wrap img {
+            width: 118px;
+            height: auto;
+            display: block;
+        }
+
+        .helper-text {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 16px;
+            color: #444;
+        }
+
+        @media (max-width: 900px) {
+            .page-title {
+                font-size: 44px;
+            }
+
+            .prompt {
+                font-size: 30px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .top-bar {
+                height: auto;
+                padding: 20px 16px;
+            }
+
+            .logo-wrap {
+                position: static;
+                transform: none;
+                margin-right: 14px;
+            }
+
+            .top-bar {
+                justify-content: flex-start;
+                gap: 12px;
+            }
+
+            .page-title {
+                font-size: 38px;
+            }
+
+            .controls-row {
+                flex-direction: column;
+            }
+
+            .speaker-wrap img {
+                width: 90px;
+            }
+
+            .button-stack {
+                width: 100%;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+        <h1 class="page-title">{{ text.title }}</h1>
+    </header>
+
+    <div class="gray-line"></div>
+
+    <main class="page-content">
+        <h2 class="prompt">{{ text.prompt }}</h2>
+
+        <form method="post" action="{% url 'htmx:saveAccessibility' %}" class="card" id="accessibilityForm">
+            {% csrf_token %}
+            <input type="hidden" name="lang" value="{{ lang }}">
+            <input type="hidden" name="theme" id="themeInput" value="{{ selected_theme }}">
+
+            <div class="swatches">
+                <button type="button" class="swatch {% if selected_theme == 'teal' %}selected{% endif %}" data-theme="teal" style="background:#0f9db7;" aria-label="Teal"></button>
+                <button type="button" class="swatch {% if selected_theme == 'orange' %}selected{% endif %}" data-theme="orange" style="background:#f7924a;" aria-label="Orange"></button>
+                <button type="button" class="swatch {% if selected_theme == 'navy' %}selected{% endif %}" data-theme="navy" style="background:#075787;" aria-label="Navy"></button>
+                <button type="button" class="swatch {% if selected_theme == 'purple' %}selected{% endif %}" data-theme="purple" style="background:#9b69de;" aria-label="Purple"></button>
+            </div>
+
+            <div class="controls-row">
+                <div class="button-stack">
+                    <button type="button" class="action-btn change-btn" id="changeBtn">{{ text.change }}</button>
+                    <button type="submit" class="action-btn continue-btn">{{ text.continue }}</button>
+                </div>
+
+                <div class="speaker-wrap">
+                    <img src="{% static 'htmx/images/speaker.png' %}" alt="Audio icon">
+                </div>
+            </div>
+
+            <div class="helper-text" id="helperText">Selected theme: {{ current_theme.name }}</div>
+        </form>
+    </main>
+
+    <script>
+        const themeInput = document.getElementById("themeInput");
+        const swatches = document.querySelectorAll(".swatch");
+        const changeBtn = document.getElementById("changeBtn");
+        const helperText = document.getElementById("helperText");
+        const root = document.documentElement;
+
+        const themeMap = {
+            teal:   { header: "#0f9db7", button: "#0f9db7", name: "Teal" },
+            orange: { header: "#f7924a", button: "#f7924a", name: "Orange" },
+            navy:   { header: "#075787", button: "#075787", name: "Navy" },
+            purple: { header: "#9b69de", button: "#9b69de", name: "Purple" }
+        };
+
+        let chosenTheme = themeInput.value;
+
+        function markSelected(themeName) {
+            swatches.forEach((swatch) => {
+                swatch.classList.toggle("selected", swatch.dataset.theme === themeName);
+            });
+            themeInput.value = themeName;
+            chosenTheme = themeName;
+        }
+
+        function applyTheme(themeName) {
+            const theme = themeMap[themeName];
+            if (!theme) return;
+
+            root.style.setProperty("--theme-color", theme.header);
+            root.style.setProperty("--button-color", theme.button);
+            helperText.textContent = `Selected theme: ${theme.name}`;
+        }
+
+        swatches.forEach((swatch) => {
+            swatch.addEventListener("click", function () {
+                markSelected(this.dataset.theme);
+            });
+        });
+
+        changeBtn.addEventListener("click", function () {
+            applyTheme(chosenTheme);
+        });
+
+        applyTheme(chosenTheme);
+    </script>
+</body>
+</html>
