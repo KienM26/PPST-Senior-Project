@@ -8,6 +8,7 @@ Briles, Kevin William <Briles39@rowan.edu>
 Lockhart, Fiona Melissa <lockha77@rowan.edu>
 Vivanco, Maria Fernanda <vivanc43@rowan.edu>
 Naik, Aanya <naikaa84@students.rowan.edu>
+Dugan, Emily <dugane14@students.rowan.edu>
 
 todo:
 1. The webapp will offer a user-friendly interface for patients to independently take the PPST.
