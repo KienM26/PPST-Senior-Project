@@ -24,4 +24,5 @@ urlpatterns = [
     path("saveAccessibility", views.save_accessibility, name="saveAccessibility"),
     path("selectVoice", views.select_voice, name="selectVoice"),
     path("saveVoice", views.save_voice, name="saveVoice"),
+    path("digitPracticeInstructions", views.digit_practice_instructions, name="digitPracticeInstructions"),
 ]
