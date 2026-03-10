@@ -232,6 +232,17 @@ def practice_test(request):
         "current_theme": current_theme,
     })
 
+@require_GET
+def digit_practice_instructions(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/digit_practice_instructions.html", {
+        "text": PRACTICE_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
 
 @require_GET
 def select_voice(request):
@@ -254,7 +265,7 @@ def save_voice(request):
 
     request.session["voice"] = selected_voice
 
-    return redirect("htmx:practiceIntro")
+    return redirect("htmx:digitPracticeInstructions")
 
 @require_GET
 def demo_bootstrap(request):
