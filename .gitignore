@@ -1,0 +1,16 @@
+# Python
+*.pyc
+__pycache__/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Virtual environment
+venv/
+.env
+
+# Migrations (optional, but usually you commit them)
+# **/migrations/*.pyc
+# **/migrations/__pycache__/
