@@ -1,65 +1,30 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="{{ lang }}">
+<html lang="{{ lang_info.code|default:'en' }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ text.title }}</title>
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
     <style>
-
-        @media (max-width: 900px) {
-            .page-title {
-                font-size: 44px;
-            }
-
-            .prompt {
-                font-size: 30px;
-            }
-        }
-
-        @media (max-width: 700px) {
-            .top-bar {
-                height: auto;
-                padding: 20px 16px;
-            }
-
-            .logo-wrap {
-                position: static;
-                transform: none;
-                margin-right: 14px;
-            }
-
-            .top-bar {
-                justify-content: flex-start;
-                gap: 12px;
-            }
-
-            .page-title {
-                font-size: 38px;
-            }
-
-            .controls-row {
-                flex-direction: column;
-            }
-
-            .speaker-wrap img {
-                width: 90px;
-            }
-
-            .button-stack {
-                width: 100%;
-                max-width: 280px;
-            }
+        :root {
+            --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+            --button-color: {{ current_theme.button|default:"#0f9db7" }};
         }
     </style>
 </head>
+
 <body class="accessibility-page">
     <header class="top-bar">
         <div class="logo-wrap">
             <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
         <h1 class="title">{{ text.title }}</h1>
+        <div class="lang-badge">
+            {{ lang_info.label }}
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+        </div>
     </header>
 
     <div class="gray-line"></div>
@@ -73,10 +38,14 @@
             <input type="hidden" name="theme" id="themeInput" value="{{ selected_theme }}">
 
             <div class="swatches">
-                <button type="button" class="swatch {% if selected_theme == 'teal' %}selected{% endif %}" data-theme="teal" style="background:#0f9db7;" aria-label="Teal"></button>
-                <button type="button" class="swatch {% if selected_theme == 'orange' %}selected{% endif %}" data-theme="orange" style="background:#f7924a;" aria-label="Orange"></button>
-                <button type="button" class="swatch {% if selected_theme == 'navy' %}selected{% endif %}" data-theme="navy" style="background:#075787;" aria-label="Navy"></button>
-                <button type="button" class="swatch {% if selected_theme == 'purple' %}selected{% endif %}" data-theme="purple" style="background:#9b69de;" aria-label="Purple"></button>
+                <button type="button" class="swatch {% if selected_theme == 'teal' %}selected{% endif %}"
+                    data-theme="teal" style="background:#0f9db7;" aria-label="Teal"></button>
+                <button type="button" class="swatch {% if selected_theme == 'orange' %}selected{% endif %}"
+                    data-theme="orange" style="background:#f7924a;" aria-label="Orange"></button>
+                <button type="button" class="swatch {% if selected_theme == 'navy' %}selected{% endif %}"
+                    data-theme="navy" style="background:#075787;" aria-label="Navy"></button>
+                <button type="button" class="swatch {% if selected_theme == 'purple' %}selected{% endif %}"
+                    data-theme="purple" style="background:#9b69de;" aria-label="Purple"></button>
             </div>
 
             <div class="controls-row">
@@ -102,9 +71,9 @@
         const root = document.documentElement;
 
         const themeMap = {
-            teal:   { header: "#0f9db7", button: "#0f9db7", name: "Teal" },
+            teal: { header: "#0f9db7", button: "#0f9db7", name: "Teal" },
             orange: { header: "#f7924a", button: "#f7924a", name: "Orange" },
-            navy:   { header: "#075787", button: "#075787", name: "Navy" },
+            navy: { header: "#075787", button: "#075787", name: "Navy" },
             purple: { header: "#9b69de", button: "#9b69de", name: "Purple" }
         };
 
@@ -140,4 +109,5 @@
         applyTheme(chosenTheme);
     </script>
 </body>
+
 </html>

@@ -64,9 +64,34 @@ LANGUAGE_INFO = {
     }
 }
 
+PRACTICE_HOME_TEXT = {
+    "en": {
+        "title": "The Philadelphia Pointing Span Proctored Test",
+        "btn": "Start Test Now",
+    },
+    "es": {
+        "title": "La Prueba Supervisada de Span de Apuntado de Filadelfia",
+        "btn": "Comenzar Prueba Ahora",
+    }
+}
+
+SELECT_VOICE_TEXT = {
+    "en": {
+        "title": "Select Your Voice",
+        "btn": "Next",
+        "female": "Female",
+        "male": "Male",
+    },
+    "es": {
+        "title": "Seleccione Su Voz",
+        "btn": "Siguiente",
+        "female": "Femenino",
+        "male": "Masculino",
+    }
+}
 PRACTICE_TEXT = {
     "en": {
-        "page_title": "Test Instructions",
+        "title": "Test Instructions",
         "intro_heading": "Before You Begin",
         "intro_body": [
             "THIS TEST MEASURES ATTENTION AND MEMORY",
@@ -86,7 +111,7 @@ PRACTICE_TEXT = {
         "practice_button": "Start Practice Test",
     },
     "es": {
-        "page_title": "Instrucciones de la Prueba",
+        "title": "Instrucciones de la Prueba",
         "intro_heading": "Antes de Comenzar",
         "intro_body": [
             "ESTA PRUEBA MIDE LA ATENCIÓN Y LA MEMORIA",
@@ -202,6 +227,7 @@ def accessibility(request):
     return render(request, "htmx/accessibility.html", {
         "lang": lang,
         "text": ACCESSIBILITY_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
         "themes": ACCESSIBILITY_THEMES,
         "selected_theme": selected_theme,
         "current_theme": ACCESSIBILITY_THEMES[selected_theme],
@@ -228,6 +254,7 @@ def practice_test(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_test.html", {
+        "text": PRACTICE_HOME_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -247,12 +274,13 @@ def digit_practice_instructions(request):
 @require_GET
 def select_voice(request):
     lang = request.session.get("lang", "en")
-    theme = request.session.get("theme", "teal")
+    current_theme = get_current_theme(request)
     selected_voice = request.session.get("voice", "")
 
     return render(request, 'htmx/select_voice.html', {
-        "lang": lang,
-        "theme": theme,
+        "text": SELECT_VOICE_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
         "selected_voice": selected_voice,
     })
 
