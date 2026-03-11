@@ -1,138 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ text.page_title|default:"Test Instructions" }}</title>
-    <style>
-        * { box-sizing: border-box; }
-
-        :root {
-            --theme-color: {{ current_theme.header|default:"#0f9db7" }};
-            --page-bg: #efeded;
-            --panel-bg: #f5f5f5;
-            --line-gray: #c8c3c3;
-            --border-color: #7a7373;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: var(--page-bg);
-            min-height: 100vh;
-        }
-
-        .top-bar {
-            background: var(--theme-color);
-            min-height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 16px 120px;
-        }
-
-        .logo-wrap {
-            position: absolute;
-            left: 38px;
-            top: 26px;
-        }
-
-        .logo-wrap img {
-            height: 46px;
-            width: auto;
-        }
-
-        .page-title {
-            color: white;
-            font-size: 46px;
-            font-weight: 800;
-            margin: 0;
-        }
-
-        .speaker-wrap {
-            position: absolute;
-            right: 190px;
-            top: 16px;
-        }
-
-        .speaker-wrap img {
-            width: 88px;
-            height: auto;
-        }
-
-        .lang-badge {
-            position: absolute;
-            right: 14px;
-            top: 10px;
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .lang-badge img {
-            width: 34px;
-            height: auto;
-        }
-
-        .gray-line {
-            height: 22px;
-            background: var(--line-gray);
-        }
-
-        .page-content {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 54px 20px 40px;
-        }
-
-        .panel {
-            width: 760px;
-            max-width: 100%;
-            margin: 0 auto;
-            background: var(--panel-bg);
-            border: 1.5px solid var(--border-color);
-            border-radius: 4px;
-            text-align: center;
-            padding: 18px 30px 34px;
-        }
-
-        .panel h2 {
-            font-size: 50px;
-            font-weight: 900;
-            margin: 0 0 26px;
-            color: #000;
-        }
-
-        .instructions {
-            font-size: 24px;
-            font-weight: 900;
-            line-height: 1.25;
-            color: #000;
-            margin-bottom: 38px;
-        }
-
-        .instructions div {
-            margin-bottom: 4px;
-        }
-
-        .next-btn {
-            width: 240px;
-            height: 58px;
-            border: none;
-            border-radius: 14px;
-            background: #0f9db7;
-            color: white;
-            font-size: 22px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
 </head>
+
 <body>
     <header class="top-bar">
         <div class="logo-wrap">
@@ -147,7 +23,7 @@
 
         <div class="lang-badge">
             {{ lang_info.label|default:"English" }}
-            <img src="{% static lang_info.flag|default:'htmx/images/flag-usa.png' %}" alt="flag">
+            <img src="{% static lang_info.flag|default:'htmx/images/flag-usa.png' %}" alt="{{ lang_info.label|default:'English' }}">
         </div>
     </header>
 
@@ -159,22 +35,23 @@
 
             <div class="instructions">
                 {% if text.intro_body %}
-                    {% for line in text.intro_body %}
-                        <div>{{ line }}</div>
-                    {% endfor %}
+                {% for line in text.intro_body %}
+                <div>{{ line }}</div>
+                {% endfor %}
                 {% else %}
-                    <div>THIS IS A TEMPORARY PLACEHOLDER PAGE</div>
-                    <div>YOUR REAL INTRO INSTRUCTIONS CAN GO HERE LATER</div>
+                <div>THIS IS A TEMPORARY PLACEHOLDER PAGE</div>
+                <div>YOUR REAL INTRO INSTRUCTIONS CAN GO HERE LATER</div>
                 {% endif %}
             </div>
 
             <form method="post" action="{% url 'htmx:practiceTestNext' %}">
                 {% csrf_token %}
-                <button type="submit" class="next-btn">
+                <button type="submit" class="btn">
                     {{ text.intro_button|default:"Next" }}
                 </button>
             </form>
         </div>
     </main>
 </body>
+
 </html>

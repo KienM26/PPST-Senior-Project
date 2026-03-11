@@ -5,8 +5,7 @@
 }
 
 :root {
-    --theme-color: {{current_theme.header}};
-    --button-color: {{current_theme.button}};    
+    --border-color: #6b6666;
     --page-bg: #efeded;
     --panel-bg: #c9c4c4;
     --text-dark: #111111;
@@ -19,7 +18,7 @@ body {
 }
 
 .top-bar {
-    height: 116px;
+    height: 132px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -31,6 +30,35 @@ body {
     height: 52px;
     width: auto;
     display: block;
+}
+
+.speaker-wrap {
+    width: 90px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.speaker-wrap img {
+    height: 70px;
+    width: auto;
+    display: block;
+}
+
+.lang-badge {
+    position: absolute;
+    right: 14px;
+    top: 10px;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lang-badge img {
+    width: 34px;
+    height: auto;
 }
 
 .title {
@@ -48,23 +76,31 @@ body {
 }
 
 .page-content {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 14px 20px 40px;
 }
 
 .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     height: 68px;
     width: 200px;
+    color: white;
+    background-color: var(--button-color);
+    margin: 1em auto 0;
     border: none;
     border-radius: 16px;
     font-size: 28px;
     cursor: pointer;
     transition: opacity 0.12s ease, transform 0.12s ease;
+    transform: translateZ(0);
+    /* prevents text shifting */
 }
 
 .btn:hover {
-    opacity: 0.95;
+    opacity: 0.85;
     transform: translateY(-1px);
 }
 
@@ -72,22 +108,60 @@ body {
     transform: translateY(1px);
 }
 
+@media (max-width: 900px) {
+    .top-bar {
+        padding: 0 20px;
+        gap: 10px;
+    }
+
+    .title {
+        font-size: 34px;
+    }
+
+    .speaker-wrap img {
+        height: 56px;
+    }
+
+    .cards {
+        gap: 40px;
+    }
+}
+
+@media (max-width: 640px) {
+    .top-bar {
+        height: auto;
+        padding: 18px 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .logo-wrap,
+    .speaker-wrap {
+        width: 100%;
+        justify-content: center;
+        display: flex;
+    }
+
+    .title {
+        order: 2;
+        width: 100%;
+        font-size: 30px;
+        margin: 8px 0;
+    }
+
+    .logo-wrap {
+        order: 1;
+    }
+
+    .speaker-wrap {
+        order: 3;
+    }
+}
+
 /* SELECT LANGUAGE PAGE */
 
 .select-language-page .top-bar {
     background-color: #059bb8;
-}
-
-.select-language-page .speaker-wrap {
-    width: 90px;
-    display: flex;
-    justify-content: flex-end;
-}
-
-.select-language-page .speaker-wrap img {
-    height: 70px;
-    width: auto;
-    display: block;
 }
 
 .cards {
@@ -102,7 +176,7 @@ body {
     width: 280px;
     min-height: 360px;
     background-color: #c9c4c4;
-    border: 2px solid #5a5555;
+    border: 2px solid var(--border-color);
     border-radius: 4px;
     padding: 20px 18px 24px;
     display: flex;
@@ -153,7 +227,7 @@ body {
     max-width: 100%;
     margin: 6px auto 0;
     background: var(--panel-bg);
-    border: 2px solid #6b6666;
+    border: 2px solid var(--border-color);
     border-radius: 4px;
     padding: 34px 28px 30px;
 }
@@ -204,8 +278,6 @@ body {
 }
 
 .continue-btn {
-    background: var(--button-color);
-    color: white;
     font-weight: 700;
 }
 
@@ -221,3 +293,172 @@ body {
     font-size: 16px;
     color: #444;
 }
+
+/* PRACTICE TEST HOME PAGE */
+.practice-test-page .btn {
+    display: block;
+    margin: 0 auto;
+}
+
+.placeholder-row {
+    margin-top: 60px;
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.placeholder-box {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 18px;
+    overflow: hidden;
+    height: 170px;
+}
+
+.placeholder-small {
+    width: 290px;
+}
+
+.placeholder-large {
+    width: 600px;
+}
+
+.placeholder-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* PRACTICE TEST INTRO PAGE */
+.panel {
+    width: 760px;
+    max-width: 100%;
+    margin: 0 auto;
+    background: var(--panel-bg);
+    border: 1.5px solid var(--border-color);
+    border-radius: 4px;
+    text-align: center;
+    padding: 18px 30px 34px;
+}
+
+.practice-test-page .btn {
+    justify-content: center;
+    /* horizontal center */
+}
+
+.panel h2 {
+    font-size: 50px;
+    font-weight: 900;
+    margin: 0 0 26px;
+    color: #000;
+}
+
+.instructions {
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.25;
+    color: #000;
+    margin-bottom: 38px;
+}
+
+.instructions div {
+    margin-bottom: 4px;
+}
+
+/* SELECT VOICE PAGE */
+
+.select-voice-page .btn {
+    display: block;
+}
+
+.voice-grid {
+    display: flex;
+    justify-content: center;
+    gap: 72px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.voice-card {
+    width: 240px;
+    background: var(--panel-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    padding: 24px 16px 20px;
+}
+
+.voice-image-box {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 26px;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 2px solid #6b6666;
+    border-radius: 14px;
+}
+
+.voice-option.selected {
+    outline: 4px solid white;
+    box-shadow: 0 0 0 2px #2b2b2b;
+}
+
+/* PRACTICE TEST INSTRUCTIONS PAGE */
+.prompt {
+    text-align: center;
+    font-size: 40px;
+    font-weight: 800;
+    color: #000;
+    margin: 0 0 6px;
+    line-height: 1.15;
+}
+
+.video {
+    width: 640px;
+    height: 360px;
+    display: block;
+    margin: 30px auto;
+}
+
+/* PRACTICE TEST READY PAGE */
+.panel {
+    width: 760px;
+    max-width: 100%;
+    margin: 0 auto;
+    background: var(--panel-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    text-align: center;
+    padding: 18px 30px 34px;
+}
+
+.panel h2 {
+    font-size: 50px;
+    font-weight: 900;
+    margin: 0 0 26px;
+    color: #000;
+}
+
+.instructions {
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.25;
+    color: #000;
+    margin-bottom: 38px;
+}
+
+.instructions div {
+    margin-bottom: 4px;
+}
+

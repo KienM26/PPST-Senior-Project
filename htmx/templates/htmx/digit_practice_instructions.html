@@ -39,25 +39,32 @@
 <body style="background: var(--page-bg);">
 
 <header class="top-bar">
-    <div class="logo-wrap">
-        <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
-    </div>
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
 
-    <h1 class="title">
-        {{ text.page_title|default:"Test Instructions" }}
-    </h1>
-</header>
+        <h1 class="title">{{ text.title }}</h1>
+
+        <div class="speaker-wrap">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+        </div>
+
+        <div class="lang-badge">
+            {{ lang_info.label }}
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+        </div>
+    </header>
 
 <div class="gray-line"></div>
 
 <main class="page-content">
-    <h2 style="text-align:center;">
+    <h2 class="prompt">
         {{ text.intro_heading|default:"Watch the Instructions" }}
     </h2>
 
     <!-- VIDEO SECTION -->
-    <div style="display:flex; justify-content:center; margin:30px 0;">
-        <video width="640" height="360" controls autoplay>
+    <div>
+        <video class="video" controls autoplay>
             <source src="{% static 'htmx/videos/test_instructions_video1.mp4' %}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -65,7 +72,7 @@
 
     <form method="post" action="{% url 'htmx:practiceTestNext' %}" style="display:flex; justify-content:center;">
         {% csrf_token %}
-        <button type="submit" class="btn continue-btn">
+        <button type="submit" class="btn">
             {{ text.intro_button|default:"Next" }}
         </button>
     </form>
