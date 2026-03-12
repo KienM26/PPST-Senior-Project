@@ -276,6 +276,7 @@ def select_voice(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
     selected_voice = request.session.get("voice", "")
+    current_theme = get_current_theme(request)
 
     return render(request, 'htmx/select_voice.html', {
         "text": SELECT_VOICE_TEXT[lang],
@@ -396,3 +397,23 @@ def jsresponse(request):
     return render(request, "htmx/partials/times.html",{
         'answer': answer
     }) 
+
+@require_GET
+def digit_stimuli_6(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/digit_stimuli_6.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def digit_stimuli_6_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/digit_stimuli_6_response.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })

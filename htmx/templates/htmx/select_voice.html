@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ text.title }}</title>
+
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+
     <style>
         :root {
             --theme-color: {{ current_theme.header|default:"#0f9db7" }};
@@ -13,83 +15,76 @@
         }
     </style>
 </head>
+
 <body class="select-voice-page">
-    <header class="top-bar">
-        <div class="logo-wrap">
-            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+
+<header class="top-bar">
+    <div class="logo-wrap">
+        <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+    </div>
+
+    <h1 class="title">{{ text.title }}</h1>
+
+    <div class="speaker-wrap">
+        <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+    </div>
+
+    <div class="lang-badge">
+        {{ lang_info.label }}
+        <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+    </div>
+</header>
+
+<div class="gray-line"></div>
+
+<main class="page-content">
+
+<form method="post" action="{% url 'htmx:saveVoice' %}">
+{% csrf_token %}
+
+<input type="hidden" name="voice" id="voiceInput" value="{{ selected_voice|default:'female' }}">
+
+<div class="voice-grid">
+
+    <!-- Female -->
+    <div class="voice-card">
+
+        <div class="voice-image-box">
+            <img src="{% static 'htmx/images/voice-female.png' %}" alt="Female voice">
         </div>
 
-        <h1 class="title">{{ text.title }}</h1>
+        <button type="button"
+            class="btn voice-option {% if selected_voice == 'female' or not selected_voice %}selected{% endif %}"
+            data-voice="female">
+            {{ text.female }}
+        </button>
 
-        <div class="speaker-wrap">
-            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+    </div>
+
+    <!-- Male -->
+    <div class="voice-card">
+
+        <div class="voice-image-box">
+            <img src="{% static 'htmx/images/voice-male.png' %}" alt="Male voice">
         </div>
 
-        <div class="lang-badge">
-            {{ lang_info.label }}
-            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
-        </div>
-    </header>
+        <button type="button"
+            class="btn voice-option {% if selected_voice == 'male' %}selected{% endif %}"
+            data-voice="male">
+            {{ text.male }}
+        </button>
 
-    <div class="gray-line"></div>
+    </div>
 
-    <main class="page-content">
-        <form method="post" action="{% url 'htmx:saveVoice' %}">
-            {% csrf_token %}
-            <input type="hidden" name="voice" id="voiceInput" value="{{ selected_voice|default:'female' }}">
+</div>
 
-            <div class="voice-grid">
-                <div class="voice-card">
-                    <div class="voice-image-box">
-                        <img src="{% static 'htmx/images/voice-female.png' %}" alt="Female voice placeholder">
-                    </div>
-                    <button type="button"
-                            class="btn voice-option {% if selected_voice == 'female' or not selected_voice %}selected{% endif %} female"
-                            data-voice="female">
-                        {{ text.female }}
-                    </button>
-                </div>
+<div class="next-wrap">
+    <button type="submit" class="btn">{{ text.btn }}</button>
+</div>
 
-                <div class="voice-card">
-                    <div class="voice-image-box">
-                        <img src="{% static 'htmx/images/voice-male.png' %}" alt="Male voice placeholder">
-                    </div>
-                    <button type="button"
-                            class="btn voice-option {% if selected_voice == 'male' %}selected{% endif %} male"
-                            data-voice="male">
-                        {{ text.male }}
-                    </button>
-                </div>
-            </div>
+</form>
 
-            <div class="next-wrap">
-                <button type="submit" class="btn">{{ text.btn }}</button>
-            </div>
-        </form>
-    </main>
+</main>
 
-    <script>
-        const voiceInput = document.getElementById("voiceInput");
-        const options = document.querySelectorAll(".voice-option");
-
-        function setVoice(value) {
-            voiceInput.value = value;
-            options.forEach(option => {
-                option.classList.toggle("selected", option.dataset.voice === value);
-            });
-        }
-
-        options.forEach(option => {
-            option.addEventListener("click", function() {
-                setVoice(this.dataset.voice);
-            });
-        });
-
-        if (!voiceInput.value) {
-            setVoice("female");
-        } else {
-            setVoice(voiceInput.value);
-        }
-    </script>
 </body>
 </html>

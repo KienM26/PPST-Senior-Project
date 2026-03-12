@@ -25,4 +25,7 @@ urlpatterns = [
     path("selectVoice", views.select_voice, name="selectVoice"),
     path("saveVoice", views.save_voice, name="saveVoice"),
     path("digitPracticeInstructions", views.digit_practice_instructions, name="digitPracticeInstructions"),
+    path("digit_stimuli_6", views.digit_stimuli_6, name="digitStimuli6"),
+    path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response"),
+
 ]
