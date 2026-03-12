@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Practice Digit Stimuli 2</title>
+
+<link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+
+<style>
+:root {
+    --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+    --button-color: {{ current_theme.button|default:"#0f9db7" }};
+    --page-bg: #efeded;
+    --panel-bg: #ffffff;
+}
+
+.stimulus-panel{
+    background: var(--panel-bg);
+    border: 1px solid #999;
+    border-radius: 6px;
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 80px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap: 30px;
+}
+
+.sequence-box{
+    width:220px;
+    height:220px;
+    border:2px solid #333;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:34px;
+    font-weight:600;
+    text-align:center;
+    background: white;
+}
+
+.next-btn{
+    background: var(--button-color);
+    color: white;
+    border: none;
+    padding: 12px 40px;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.next-btn:hover{
+    opacity: .9;
+}
+
+@media (max-width: 700px){
+    .sequence-box{
+        width:180px;
+        height:180px;
+        font-size:28px;
+    }
+}
+</style>
+
+</head>
+
+<body style="background: var(--page-bg);">
+
+<header class="top-bar">
+    <div class="logo-wrap">
+        <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+    </div>
+
+    <h1 class="title">Practice Test Digit Stimuli 2</h1>
+
+    <div class="speaker-wrap">
+        <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+    </div>
+
+    <div class="lang-badge">
+        {{ lang_info.label }}
+        <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+    </div>
+</header>
+
+<div class="gray-line"></div>
+
+<main class="stimulus-panel">
+    <div class="sequence-box">
+    </div>
+
+    <a href="{% url 'htmx:practiceDigitStimuli2Response' %}" class="next-btn">Next</a>
+</main>
+
+</body>
+</html>

@@ -417,3 +417,46 @@ def digit_stimuli_6_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
+
+@require_GET
+def practice_digit_stimuli_1(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_digit_stimuli_1.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+@require_GET
+def practice_digit_stimuli_1_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_digit_stimuli_1_response.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+@require_GET
+def practice_digit_stimuli_2(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_digit_stimuli_2.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+@require_GET
+def practice_digit_stimuli_2_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_digit_stimuli_2_response.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
