@@ -64,19 +64,28 @@
 
     <!-- VIDEO SECTION -->
     <div>
-        <video class="video" controls autoplay>
-            <source src="{% static 'htmx/videos/test_instructions_video1.mp4' %}" type="video/mp4">
+        <video class="video" id="instructionVideo" controls autoplay>
+            <source src="{% static 'htmx/video/test_instructions_video1.mp4' %}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
 
     <form method="post" action="{% url 'htmx:practiceTestNext' %}" style="display:flex; justify-content:center;">
         {% csrf_token %}
-        <button type="submit" class="btn">
+        <button type="submit" class="btn" id="nextBtn" disabled>
             {{ text.intro_button|default:"Next" }}
         </button>
     </form>
 </main>
+
+<script>
+const video = document.getElementById("instructionVideo");
+const nextBtn = document.getElementById("nextBtn");
+
+video.addEventListener("ended", function() {
+    nextBtn.disabled = false;
+});
+</script>
 
 </body>
 </html>
