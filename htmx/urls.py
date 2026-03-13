@@ -37,5 +37,10 @@ urlpatterns = [
     path("digit_stimuli_5_response", views.digit_stimuli_5_response, name="digitStimuli5Response"),
     path("digit_stimuli_6", views.digit_stimuli_6, name="digitStimuli6"),
     path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response"),
+    path("practice_digit_stimuli_1_response", views.practice_digit_stimuli_1_response, name="practiceDigitStimuli1Response"),
+    path("practice_digit_stimuli_1", views.practice_digit_stimuli_1, name="practiceDigitStimuli1"),
+    path("practice_digit_stimuli_2_response", views.practice_digit_stimuli_2_response, name="practiceDigitStimuli2Response"),
+    path("practice_digit_stimuli_2", views.practice_digit_stimuli_2, name="practiceDigitStimuli2")
+
 
 ]
