@@ -72,7 +72,7 @@
 
     <form method="post" action="{% url 'htmx:practiceTestNext' %}" style="display:flex; justify-content:center;">
         {% csrf_token %}
-        <button type="submit" class="btn" id="nextBtn" disabled>
+        <button type="submit" class="btn centered" id="nextBtn">
             {{ text.intro_button|default:"Next" }}
         </button>
     </form>

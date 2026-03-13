@@ -4,152 +4,88 @@
 <html lang="{{ lang|default:'en' }}">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Practice Digit Response 1</title>
+    <title>{{ text.title_response }} 1</title>
 
-<link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
 
-<style>
-:root {
-    --theme-color: {{ current_theme.header|default:"#0f9db7" }};
-    --button-color: {{ current_theme.button|default:"#0f9db7" }};
-    --page-bg: #efeded;
-}
-
-/* Main panel */
-.response-panel{
-    max-width:1100px;
-    margin:30px auto;
-    background:#bfbaba;
-    border:1px solid #555;
-    border-radius:6px;
-    padding:40px;
-    text-align:center;
-}
-
-/* instruction banner */
-.prompt-box{
-    display:inline-block;
-    background:white;
-    border:3px solid #444;
-    padding:12px 40px;
-    font-size:34px;
-    font-weight:700;
-    margin-bottom:40px;
-}
-
-/* keypad */
-.keypad{
-    display:grid;
-    grid-template-columns:repeat(3,120px);
-    grid-gap:0;
-    justify-content:center;
-    margin:auto;
-}
-
-.key{
-    width:120px;
-    height:90px;
-    border:1px solid #333;
-    font-size:38px;
-    font-weight:bold;
-    background:#dcdcdc;
-    cursor:pointer;
-}
-
-.key:hover{
-    background:#c9c9c9;
-}
-
-/* submit button */
-.submit-wrap{
-    margin-top:30px;
-}
-
-.submit-btn{
-    background:var(--button-color);
-    color:white;
-    border:none;
-    padding:12px 40px;
-    font-size:18px;
-    border-radius:10px;
-    cursor:pointer;
-}
-
-.submit-btn:hover{
-    opacity:.9;
-}
-</style>
+    <style>
+        :root {
+            --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+            --button-color: {{ current_theme.button|default:"#0f9db7" }};
+        }
+    </style>
 </head>
 
-<body style="background:var(--page-bg);">
+<body class="digit-stimuli-response-page">
 
-<header class="top-bar">
+    <header class="top-bar">
 
-<div class="logo-wrap">
-<img src="{% static 'htmx/images/ppst-logo.png' %}">
-</div>
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}">
+        </div>
 
-<h1 class="title">Practice Test Digit Stimuli 1 Response</h1>
+        <h1 class="title">{{ text.title_response }} 1</h1>
 
-<div class="speaker-wrap">
-<img src="{% static 'htmx/images/speaker.png' %}">
-</div>
+        <div class="speaker-wrap">
+            <img src="{% static 'htmx/images/speaker.png' %}">
+        </div>
 
-<div class="lang-badge">
-{{ lang_info.label }}
-<img src="{% static lang_info.flag %}">
-</div>
+        <div class="lang-badge">
+            {{ lang_info.label }}
+            <img src="{% static lang_info.flag %}">
+        </div>
 
-</header>
+    </header>
 
-<div class="gray-line"></div>
+    <div class="gray-line"></div>
 
-<main class="response-panel">
+    <main class="response-panel">
 
-<div class="prompt-box">
-Please Enter Digits in Ascending Order
-</div>
+        <div class="prompt-box">
+            {{ text.prompt }}
+        </div>
 
-<form method="post" action="">
-{% csrf_token %}
+        <form method="get" action="{% url 'htmx:practiceDigitStimuli2' %}">
+            {% csrf_token %}
 
-<input type="hidden" name="response" id="response">
+            <input type="hidden" name="response" id="response">
 
-<div class="keypad">
+            <div class="keypad">
 
-<button type="button" class="key" onclick="press(1)">1</button>
-<button type="button" class="key" onclick="press(2)">2</button>
-<button type="button" class="key" onclick="press(3)">3</button>
+                <button type="button" class="key" onclick="press(1)">1</button>
+                <button type="button" class="key" onclick="press(2)">2</button>
+                <button type="button" class="key" onclick="press(3)">3</button>
 
-<button type="button" class="key" onclick="press(4)">4</button>
-<button type="button" class="key" onclick="press(5)">5</button>
-<button type="button" class="key" onclick="press(6)">6</button>
+                <button type="button" class="key" onclick="press(4)">4</button>
+                <button type="button" class="key" onclick="press(5)">5</button>
+                <button type="button" class="key" onclick="press(6)">6</button>
 
-<button type="button" class="key" onclick="press(7)">7</button>
-<button type="button" class="key" onclick="press(8)">8</button>
-<button type="button" class="key" onclick="press(9)">9</button>
+                <button type="button" class="key" onclick="press(7)">7</button>
+                <button type="button" class="key" onclick="press(8)">8</button>
+                <button type="button" class="key" onclick="press(9)">9</button>
 
-</div>
+            </div>
 
-<div class="submit-wrap">
-<button class="submit-btn">Submit</button>
-</div>
+            <div class="submit-wrap">
+                <button class="btn">{{ text.submit }}</button>
+            </div>
 
-</form>
+        </form>
 
-</main>
+    </main>
 
-<script>
-let answer = [];
+    <script>
+        let answer = [];
 
-function press(num){
-    answer.push(num);
-    document.getElementById("response").value = answer.join("");
-}
-</script>
+        function press(num) {
+            answer.push(num);
+            document.getElementById("response").value = answer.join("");
+        }
+    </script>
 
 </body>
+
 </html>
