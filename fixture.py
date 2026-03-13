@@ -1,99 +1,90 @@
-from basic.models import Computed
-from django.contrib.auth.models import User
-from tasks.models import Project, Member, Notification, Task
 from django.utils import timezone
+from database.models import Doctor, Test, Stimulus, Response, Latency, Results
 
-# Delete existing objects
-for c in [Computed, Project, Member, Notification, Task]:
+
+for c in [Latency, Response, Stimulus, Results, Test, Doctor]:
     c.objects.all().delete()
 
 
-# Install fixture
-newobject = Computed(input=80,output=6400,time_computed=timezone.now())
-newobject.save()
-
-projects = [Project.objects.create(name=name) for name in ["Wireframes", "Models", "Fake data"]]
-for project in projects:
-    project.save()
-
-members = [Member.objects.create_user(username= "m"+str(i)) for i in range(0,10)]
-for m in members:
-    m.save()
-
-
-# Task status 0 = not started, 1 = in progress, 2 = completed
-t0 = Task(description="Home page", project=projects[0], assignee=members[0])
-t0.save()
-t1 = Task(description="Login page", project=projects[0], assignee=members[1])
-t1.save()
-t2 = Task(description="Tasks dashboard page", project=projects[0], assignee=members[1])
-t2.started()
-t2.save()
-
-t3 = Task(description="Member model", project=projects[1], assignee=members[2])
-t3.started()
-t3.save()
-t4 = Task(description="Task model", project=projects[1], assignee=members[4])
-t4.completed()
-t4.save()
-t5 = Task(description="Notification model", project=projects[1], assignee=members[3])
-t5.save()
-t6 = Task(description="Project model", project=projects[1], assignee=members[1])
-t6.started()
-t6.save()
-
-t7 = Task(description="Fake members", project=projects[2], assignee=members[4])
-t7.completed()
-t7.save()
-t8 = Task(description="Fake notifications", project=projects[2], assignee=members[5])
-t8.started()
-t8.save()
-t9 = Task(description="Fake projects", project=projects[2], assignee=members[5])
-t9.started()
-t9.save()
-t10 = Task(description="Fake tasks", project=projects[2], assignee=members[1])
-t10.save()
+doctor1 = Doctor.objects.create_user(
+    username="doctor1",
+    password="testpass",
+    first_name="John",
+    last_name="Smith",
+    middle_initial="A",
+    organization_name="PPST Clinic",
+    office_name="Main Office",
+    medical_license_number="LIC1001",
+    is_approved=True
+)
 
 
-
-n1 = Notification(message="Your wireframe task is running behind schedule!")
-n1.save()
-n1.users.add(members[0], members[1])
-
-n2 = Notification(message="Good job with your progress on Task model")
-n2.save()
-n2.users.add(members[4])
-
-n3 = Notification(message="Terrific job on your previous project!")
-n3.save()
-n3.users.add(members[1])
+test1 = Test.objects.create(
+    doctor=doctor1,
+    status="active",
+    expiration_date=timezone.now() + timezone.timedelta(days=7),
+    test_taker_age=12,
+    is_independent=True
+)
 
 
-# Some useful queries that may be pertinent while writing view functions
+stimuli_data = [
+    ("3A7C", "37AC", 4),
+    ("U26M", "26MU", 4),
+    ("5F2A", "25AF", 4),
+    ("K3I8", "38IK", 4),
+    ("7C2L", "27CL", 4),
+    ("3A7C1", "137AC", 5),
+    ("U26M4", "246MU", 5),
+    ("5F2A9", "259AF", 5),
+    ("K3I18", "138IK", 5),
+    ("7C2L5", "257CL", 5),
+]
 
-# All tasks within project Models
 
-tasks = Task.objects.filter(project__name="Models")
-print(f"Tasks within the project Models are: {[t.description for t in tasks]}")
+stimulus_objects = []
 
-# Members working on project Fake data
 
-members=Task.objects.filter(project__name="Fake data").values('assignee').distinct()
-print(f"\nTeam members working on project Fake data are: \
-{[Member.objects.get(pk=x['assignee']).username for x in members]}")
+for stimulus_string, correct_answer, span_length in stimuli_data:
+    stimulus_objects.append(
+        Stimulus.objects.create(
+            test=test1,
+            stimulus_string=stimulus_string,
+            correct_answer=correct_answer,
+            stimulus_type="mixed",
+            span_length=span_length
+        )
+    )
 
-# Tasks assigned to member m4
 
-tasks = Task.objects.filter(assignee__username="m4")
-print("\nTasks assigned to user m4 are: {[t.description for t in tasks]}")
+responses = []
 
-# Notifications for member m1
 
-notifications = Member.objects.filter(username="m1")[0].notification_set.all()
-print(f"\nNotifications for team member m1 are: {[n.message for n in notifications]}")
+for stimulus in stimulus_objects[:5]:
+    response = Response.objects.create(
+        test=test1,
+        stimulus=stimulus,
+        response_string=stimulus.correct_answer,
+        is_correct=True
+    )
+    responses.append(response)
 
-# Task description for those tasks have yet to be started within project Wireframes
 
-descriptions = Task.objects.filter(project__name="Wireframes", status = 0).values_list('description', flat=True)
-print(f"\nTasks that have yet to start in project Wireframes: {list(descriptions)}")
+for response in responses:
+    resp_string = response.response_string
+    for i, char in enumerate(resp_string):
+        Latency.objects.create(
+            response=response,
+            input_order=i + 1,
+            input_value=char,
+            time=600 + (i * 150)
+        )
 
+
+Results.objects.create(
+    test=test1,
+    total_time=12000,
+    response_time=750,
+    num_of_correct=5,
+    num_of_incorrect=0
+)
