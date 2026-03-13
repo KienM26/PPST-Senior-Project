@@ -46,7 +46,10 @@ urlpatterns = [
     path("digit_stimuli_5", views.digit_stimuli_5, name="digitStimuli5"),
     path("digit_stimuli_5_response", views.digit_stimuli_5_response, name="digitStimuli5Response"),
     path("digit_stimuli_6", views.digit_stimuli_6, name="digitStimuli6"),
-    path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response")
-
+    path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response"),
+    path("instruction_practice_intro", views.instruction_after_practice_intro, name="instructionPracticeIntro"),
+    path("instruction_stimuli_1", views.instruction_after_stimuli_1, name="instructionStimuli1"),
+    path("instruction_stimuli_2", views.instruction_after_stimuli_2, name="instructionStimuli2"),
+    path("mixed_instruction", views.mixed_instruction_page, name="mixedInstruction")
 
 ]

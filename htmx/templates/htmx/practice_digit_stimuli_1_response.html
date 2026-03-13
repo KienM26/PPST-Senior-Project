@@ -48,7 +48,7 @@
             {{ text.prompt }}
         </div>
 
-        <form method="get" action="{% url 'htmx:practiceDigitStimuli2' %}">
+        <form method="get" action="{% url 'htmx:instructionStimuli1' %}">
             {% csrf_token %}
 
             <input type="hidden" name="response" id="response">

@@ -47,7 +47,7 @@
             {{ text.prompt }}
         </div>
 
-        <form method="post" action="">
+        <form method="get" action="{% url 'htmx:mixedInstruction' %}">
             {% csrf_token %}
 
             <input type="hidden" name="response" id="response">

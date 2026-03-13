@@ -1,5 +1,5 @@
 {% load static %}
-<!-- Ella Marino 3/10/2026 -->
+
 
 <!DOCTYPE html>
 <html lang="{{ lang|default:'en' }}">
@@ -57,34 +57,28 @@
 
 <div class="gray-line"></div>
 
-<main class="page-content">
-    <h2 class="prompt">
-        {{ text.intro_heading|default:"Watch the Instructions" }}
-    </h2>
+    <main class="page-content">
+        <div class="panel">
+            <h2>Practice Test 2</h2>
 
-    <!-- VIDEO SECTION -->
-    <div>
-        <video class="video" id="instructionVideo" controls autoplay>
-            <source src="{% static 'htmx/video/test_instructions_video1.mp4' %}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
+            <div class="instructions">
+                
+                    <div>YOU ARE ABOUT TO BEGIN THE PPST PRACTICE </div>
+                
+                    <div>TEST WITH DIGIT STIMULI. YOU WILL GO THROUGH </div>
+                
+                    <div>TWO PRACTICE STIMULUS AND RESPONSE PAGES.</div>
+                
+                    <div> PLEASE CHOOSE THE START PRACTICE TEST BUTTON WHEN YOU ARE READY TO BEGIN.</div>
+                
+            </div>
 
-    <form method="get" action="{% url 'htmx:instructionPracticeIntro' %}">        {% csrf_token %}
-        <button type="submit" class="btn centered" id="nextBtn">
-            {{ text.intro_button|default:"Next" }}
-        </button>
-    </form>
-</main>
+            <form method="get" action="{% url 'htmx:practiceDigitStimuli2' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">Start Practice Test</button>
+            </form>
+        </div>
+    </main>
 
-<script>
-const video = document.getElementById("instructionVideo");
-const nextBtn = document.getElementById("nextBtn");
 
-video.addEventListener("ended", function() {
-    nextBtn.disabled = false;
-});
-</script>
-
-</body>
-</html>
+</body></html>

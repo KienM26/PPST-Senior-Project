@@ -1,5 +1,5 @@
 {% load static %}
-<!-- Ella Marino 3/10/2026 -->
+
 
 <!DOCTYPE html>
 <html lang="{{ lang|default:'en' }}">
@@ -43,7 +43,7 @@
             <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
 
-        <h1 class="title">{{ text.title }}</h1>
+        <h1 class="title">Test Instructions</h1>
 
         <div class="speaker-wrap">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
@@ -57,34 +57,30 @@
 
 <div class="gray-line"></div>
 
-<main class="page-content">
-    <h2 class="prompt">
-        {{ text.intro_heading|default:"Watch the Instructions" }}
-    </h2>
+    <main class="page-content">
+        <div class="panel">
+            <h2>Before You Begin</h2>
 
-    <!-- VIDEO SECTION -->
-    <div>
-        <video class="video" id="instructionVideo" controls autoplay>
-            <source src="{% static 'htmx/video/test_instructions_video1.mp4' %}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
+            <div class="instructions">
+                
+                    <div> THIS TEST MEASURE ATTENTION AND MEMORY</div>
+                
+                    <div>YOU WILL SEE OR HEAR DIFFERENT PROMPTS </div>
+            
+                    <div>FOLLOW THE ON-SCREEN INSTRUCTIONS CAREFULLY</div>
+                
+                    <div>ANSWER EACH PROMPT TO THE BEST OF YOUR </div>
 
-    <form method="get" action="{% url 'htmx:instructionPracticeIntro' %}">        {% csrf_token %}
-        <button type="submit" class="btn centered" id="nextBtn">
-            {{ text.intro_button|default:"Next" }}
-        </button>
-    </form>
-</main>
+                    <div>ABILITY YOUR RESPONSES REMAIN ANONYMOUS</div>
+                
+            </div>
 
-<script>
-const video = document.getElementById("instructionVideo");
-const nextBtn = document.getElementById("nextBtn");
+            <form method="get" action="{% url 'htmx:practiceDigitStimuli1' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">NEXT</button>
+            </form>
+        </div>
+    </main>
 
-video.addEventListener("ended", function() {
-    nextBtn.disabled = false;
-});
-</script>
 
-</body>
-</html>
+</body></html>

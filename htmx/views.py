@@ -607,3 +607,51 @@ def digit_stimuli_6_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
+
+#MV
+
+@require_GET
+def instruction_after_practice_intro(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+    return render(request, "htmx/instruction_after_practice_intro.html", {
+        "text": STIMULI_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+
+@require_GET
+def instruction_after_stimuli_1(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+    return render(request, "htmx/instruction_after_stimuli_1.html", {
+        "text": STIMULI_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+@require_GET
+def instruction_after_stimuli_2(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+    return render(request, "htmx/instruction_after_stimuli_2.html", {
+        "text": STIMULI_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_instruction_page(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+    return render(request, "htmx/mixed_instruction.html", {
+        "text": STIMULI_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+    
