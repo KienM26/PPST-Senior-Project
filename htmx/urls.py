@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic.base import RedirectView
 
 from . import views
 
@@ -26,9 +27,8 @@ urlpatterns = [
     path("saveAccessibility", views.save_accessibility, name="saveAccessibility"),
     
     path("selectVoice", views.select_voice, name="selectVoice"),
-    path("saveVoice", views.save_voice, name="saveVoice"),
-    
     path("digitPracticeInstructions", views.digit_practice_instructions, name="digitPracticeInstructions"),
+    path("saveVoice", views.save_voice, name="saveVoice"),
     
     path("practice_digit_stimuli_1_response", views.practice_digit_stimuli_1_response, name="practiceDigitStimuli1Response"),
     path("practice_digit_stimuli_1", views.practice_digit_stimuli_1, name="practiceDigitStimuli1"),
