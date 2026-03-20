@@ -46,7 +46,8 @@ urlpatterns = [
     path("digit_stimuli_5", views.digit_stimuli_5, name="digitStimuli5"),
     path("digit_stimuli_5_response", views.digit_stimuli_5_response, name="digitStimuli5Response"),
     path("digit_stimuli_6", views.digit_stimuli_6, name="digitStimuli6"),
-    path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response")
+    path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response"),
 
+    path("home", views.home, name="home"),
 
 ]
