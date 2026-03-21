@@ -6,7 +6,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>{{ text.title_response }} 2</title>
 
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
@@ -22,22 +21,20 @@
 <body class="digit-stimuli-response-page">
 
     <header class="top-bar">
-
         <div class="logo-wrap">
-            <img src="{% static 'htmx/images/ppst-logo.png' %}">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
 
         <h1 class="title">{{ text.title_response }} 2</h1>
 
         <div class="speaker-wrap">
-            <img src="{% static 'htmx/images/speaker.png' %}">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
         </div>
 
         <div class="lang-badge">
             {{ lang_info.label }}
-            <img src="{% static lang_info.flag %}">
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
         </div>
-
     </header>
 
     <div class="gray-line"></div>
@@ -48,13 +45,10 @@
             {{ text.prompt }}
         </div>
 
-        <form method="get" action="{% url 'htmx:digitStimuli1' %}">
-            {% csrf_token %}
-
+        <form method="get" action="{% url 'htmx:digitPracticeInstructionsActualTest' %}">
             <input type="hidden" name="response" id="response">
 
             <div class="keypad">
-
                 <button type="button" class="key" onclick="press(1)">1</button>
                 <button type="button" class="key" onclick="press(2)">2</button>
                 <button type="button" class="key" onclick="press(3)">3</button>
@@ -66,13 +60,11 @@
                 <button type="button" class="key" onclick="press(7)">7</button>
                 <button type="button" class="key" onclick="press(8)">8</button>
                 <button type="button" class="key" onclick="press(9)">9</button>
-
             </div>
 
             <div class="submit-wrap">
-                <button class="btn">{{ text.submit }}</button>
+                <button type="submit" class="btn">{{ text.submit }}</button>
             </div>
-
         </form>
 
     </main>
@@ -87,5 +79,4 @@
     </script>
 
 </body>
-
 </html>

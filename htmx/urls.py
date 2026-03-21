@@ -11,9 +11,6 @@ app_name = "htmx"
 ## Ex.
 
 urlpatterns = [
-    path("demo", views.demo, name="demo"),
-    path("test", views.test, name="test"),
-    
     path("practiceTest", views.practice_test, name="practiceTest"),
     path("practiceIntro", views.practice_test_intro, name="practiceIntro"),
     path("practiceTestNext", views.practice_test_next, name="practiceTestNext"),
@@ -21,20 +18,25 @@ urlpatterns = [
     path("startPracticeTest", views.start_practice_test, name="startPracticeTest"),
     path("practiceStimulus", views.practice_stimulus, name="practiceStimulus"),
     
+    ##practice exam select language and accessibility
     path("doctorPortal", views.doctor_portal, name="doctorPortal"),
     path("selectLanguage", views.select_language, name="SelectLanguage"),
     path("accessibility", views.accessibility, name="Accessibility"),
     path("saveAccessibility", views.save_accessibility, name="saveAccessibility"),
     
+    ##select voice M/F
     path("selectVoice", views.select_voice, name="selectVoice"),
     path("digitPracticeInstructions", views.digit_practice_instructions, name="digitPracticeInstructions"),
     path("saveVoice", views.save_voice, name="saveVoice"),
     
+    ##practice exam
     path("practice_digit_stimuli_1_response", views.practice_digit_stimuli_1_response, name="practiceDigitStimuli1Response"),
     path("practice_digit_stimuli_1", views.practice_digit_stimuli_1, name="practiceDigitStimuli1"),
     path("practice_digit_stimuli_2_response", views.practice_digit_stimuli_2_response, name="practiceDigitStimuli2Response"),
     path("practice_digit_stimuli_2", views.practice_digit_stimuli_2, name="practiceDigitStimuli2"),
     
+    path("digitPracticeInstructionsActualTest", views.digit_practice_instruction_actual_test, name="digitPracticeInstructionsActualTest"),
+
     path("digit_stimuli_1", views.digit_stimuli_1, name="digitStimuli1"),
     path("digit_stimuli_1_response", views.digit_stimuli_1_response, name="digitStimuli1Response"),
     path("digit_stimuli_2", views.digit_stimuli_2, name="digitStimuli2"),

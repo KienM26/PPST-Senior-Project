@@ -233,6 +233,16 @@ def practice_stimulus(request):
     })
 
 @require_GET
+def digit_practice_instruction_actual_test(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/digit_practice_instruction_actualTest.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
 def select_language(request):
     return render(request, 'htmx/select_language.html', {})
 
