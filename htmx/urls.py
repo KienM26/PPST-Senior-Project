@@ -18,12 +18,15 @@ urlpatterns = [
     path("startPracticeTest", views.start_practice_test, name="startPracticeTest"),
     path("practiceStimulus", views.practice_stimulus, name="practiceStimulus"),
     
+
     ##practice exam select language and accessibility
     path("doctorPortal", views.doctor_portal, name="doctorPortal"),
     path("selectLanguage", views.select_language, name="SelectLanguage"),
     path("accessibility", views.accessibility, name="Accessibility"),
     path("saveAccessibility", views.save_accessibility, name="saveAccessibility"),
     
+    path("home", views.home, name="home"),
+
     ##select voice M/F
     path("selectVoice", views.select_voice, name="selectVoice"),
     path("digitPracticeInstructions", views.digit_practice_instructions, name="digitPracticeInstructions"),
@@ -50,6 +53,6 @@ urlpatterns = [
     path("digit_stimuli_6", views.digit_stimuli_6, name="digitStimuli6"),
     path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response"),
 
-    path("home", views.home, name="home"),
+    path("mixed_stimuli_practice_test", views.mixed_stimuli_practice_test, name="mixedStimuliPracticeTest"),
 
 ]

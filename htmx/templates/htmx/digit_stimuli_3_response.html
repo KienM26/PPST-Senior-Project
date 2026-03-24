@@ -1,4 +1,5 @@
 {% load static %}
+<!-- Fiona Lockhart 3/12/2026 -->
 <!DOCTYPE html>
 <html lang="{{ lang|default:'en' }}">
 
@@ -6,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{{ text.title_response}} 3</title>
+    <title>{{ text.title_response }} 3</title>
 
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
 
@@ -21,22 +22,20 @@
 <body class="digit-stimuli-response-page">
 
     <header class="top-bar">
-
         <div class="logo-wrap">
-            <img src="{% static 'htmx/images/ppst-logo.png' %}">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
 
         <h1 class="title">{{ text.title_response }} 3</h1>
 
         <div class="speaker-wrap">
-            <img src="{% static 'htmx/images/speaker.png' %}">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
         </div>
 
         <div class="lang-badge">
             {{ lang_info.label }}
-            <img src="{% static lang_info.flag %}">
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
         </div>
-
     </header>
 
     <div class="gray-line"></div>
@@ -48,8 +47,6 @@
         </div>
 
         <form method="get" action="{% url 'htmx:digitStimuli4' %}">
-            {% csrf_token %}
-
             <input type="hidden" name="response" id="response">
 
             <div class="keypad">
@@ -69,7 +66,7 @@
             </div>
 
             <div class="submit-wrap">
-                <button class="btn">{{ text.submit }}</button>
+                <button type="submit" class="btn">{{ text.submit }}</button>
             </div>
 
         </form>
