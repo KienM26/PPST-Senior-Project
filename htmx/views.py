@@ -641,3 +641,13 @@ def home(request):
         "current_theme": current_theme,
         "text": PRACTICE_HOME_TEXT[lang],  
     })
+
+@require_GET
+def mixed_stimuli_practice_test(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_practice_test.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
