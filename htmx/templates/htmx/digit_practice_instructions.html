@@ -74,11 +74,21 @@
         </div>
 
         <form method="get" action="{% url 'htmx:practiceDigitStimuli1' %}" style="display:flex; justify-content:center;">
-            <button type="submit" class="btn centered" id="nextBtn">
+            <button type="submit" class="btn centered" id="nextBtn" disabled>
                 {{ text.intro_button|default:"Next" }}
             </button>
         </form>
     </main>
 
 </body>
+
+<script>
+    const video = document.getElementById('instructionVideo');
+    const nextBtn = document.getElementById('nextBtn');
+
+    video.addEventListener('ended', () => {
+        nextBtn.disabled = false;
+    });
+</script>
+
 </html>
