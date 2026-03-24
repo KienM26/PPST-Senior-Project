@@ -93,6 +93,8 @@ PRACTICE_TEXT = {
             "ANSWER EACH PROMPT TO THE BEST OF YOUR ABILITY",
             "YOUR RESPONSES REMAIN ANONYMOUS",
         ],
+        "digit_test": "Digit Stimuli Test",
+        "digit_practice_instruction_actual_test": "YOU ARE ABOUT TO BEGIN THE PPST TEST WITH DIGIT STIMULI. PLEASE CHOOSE THE START TEST BUTTON WHEN YOU ARE READY TO BEGIN.",
         "intro_button": "Next",
         "practice_heading": "Practice Test",
         "practice_body": [
@@ -113,6 +115,8 @@ PRACTICE_TEXT = {
             "RESPONDA CADA INDICACIÓN LO MEJOR POSIBLE",
             "SUS RESPUESTAS PERMANECEN ANÓNIMAS",
         ],
+        "digit_test": "Prueba de Estímulos de Dígitos",
+        "digit_practice_instruction_actual_test": "ESTÁ A PUNTO DE COMENZAR LA PRUEBA PPST CON ESTÍMULOS DE DÍGITOS. POR FAVOR, ELIJA EL BOTÓN COMENZAR PRUEBA CUANDO ESTÉ LISTO PARA INICIAR.",
         "intro_button": "Siguiente",
         "practice_heading": "Prueba de Práctica",
         "practice_body": [
@@ -129,6 +133,8 @@ PRACTICE_STIMULI_TEXT = {
     "en": {
         "title": "Practice Test Digit Stimuli",
         "title_response": "Practice Test Digit Stimuli Response",
+        "title_mixed": "Practice Test Mixed Stimuli",
+        "title_mixed_response": "Practice Test Mixed Stimuli Response",
         "sequence": "Sequence shown here",
         "prompt": "Please Enter Digits in Ascending Order",
         "submit": "Submit",
@@ -137,6 +143,8 @@ PRACTICE_STIMULI_TEXT = {
     "es": {
         "title": "Prueba de Práctica de Dígitos",
         "title_response": "Respuesta de Prueba de Práctica de Dígitos",
+        "title_mixed": "Prueba de práctica con estímulos mixtos",
+        "title_mixed_response": "Prueba de práctica con estímulos mixtos y respuesta",
         "sequence": "Secuencia mostrada aquí",
         "prompt": "Por favor, ingrese los dígitos en orden ascendente",
         "submit": "Enviar",
@@ -148,6 +156,8 @@ STIMULI_TEXT = {
     "en": {
         "title": "Digit Stimuli",
         "title_response": "Digit Stimuli Response",
+        "title_mixed": "Mixed Stimuli",
+        "title_mixed_response": "Mixed Stimuli Response",
         "sequence": "Sequence shown here",
         "prompt": "Please Enter Digits in Ascending Order",
         "submit": "Submit",
@@ -156,6 +166,8 @@ STIMULI_TEXT = {
     "es": {
         "title": "Estímulos de Dígitos",
         "title_response": "Respuesta de Estímulos de Dígitos",
+        "title_mixed": "Estímulos Mixtos",
+        "title_mixed_response": "Respuesta de Estímulos Mixtos",
         "sequence": "Secuencia mostrada aquí",
         "prompt": "Por favor, ingrese los dígitos en orden ascendente",
         "submit": "Enviar",
@@ -238,6 +250,7 @@ def digit_practice_instruction_actual_test(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_practice_instruction_actualTest.html", {
+        "text": PRACTICE_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })

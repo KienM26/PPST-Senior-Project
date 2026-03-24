@@ -63,7 +63,7 @@
             <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
 
-        <h1 class="title">Test Instructions</h1>
+        <h1 class="title">{{ text.title }}</h1>
 
         <div class="speaker-wrap">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
@@ -78,11 +78,10 @@
     <div class="gray-line"></div>
 
     <main class="instruction-panel">
-        <h2 class="instruction-title">Digit Stimuli Test</h2>
+        <h2 class="instruction-title">{{ text.digit_test }}</h2>
 
         <p class="instruction-text">
-            YOU ARE ABOUT TO BEGIN THE PPST TEST WITH DIGIT STIMULI.
-            PLEASE CHOOSE THE START TEST BUTTON WHEN YOU ARE READY TO BEGIN.
+            {{ text.digit_practice_instruction_actual_test }}
         </p>
 
         <form method="get" action="{% url 'htmx:digitStimuli1' %}">
