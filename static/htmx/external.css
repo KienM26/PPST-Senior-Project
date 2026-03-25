@@ -529,3 +529,11 @@ body {
 .key:hover{
     background:#c9c9c9;
 }
+
+.keypad-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px; /* space between the two keypads */
+    margin-top: 20px;
+}
+

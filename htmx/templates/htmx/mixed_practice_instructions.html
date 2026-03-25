@@ -84,8 +84,8 @@
             {{ text.mixed_practice_instructions }}
         </p>
 
-        <form method="get" action="#">
-            <button type="submit" class="btn centered">{{ text.practice_button }}</button>
+        <form method="get" action="{% url 'htmx:practiceMixedStimuli1' %}">
+                <button type="submit" class="btn centered">{{ text.practice_button }}</button>
         </form>
     </main>
 
