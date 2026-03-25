@@ -78,14 +78,14 @@
     <div class="gray-line"></div>
 
     <main class="instruction-panel">
-        <h2 class="instruction-title">{{ text.digit_test }}</h2>
+        <h2 class="instruction-title">Mixed Stimuli<br>Practice Test 1</h2>
 
         <p class="instruction-text">
-            {{ text.digit_practice_instruction_actual_test }}
+            {{ text.mixed_practice_instructions }}
         </p>
 
-        <form method="get" action="{% url 'htmx:digitStimuli1' %}">
-            <button type="submit" class="btn centered">Start Test</button>
+        <form method="get" action="#">
+            <button type="submit" class="btn centered">{{ text.practice_button }}</button>
         </form>
     </main>
 

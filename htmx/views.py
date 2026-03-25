@@ -94,7 +94,11 @@ PRACTICE_TEXT = {
             "YOUR RESPONSES REMAIN ANONYMOUS",
         ],
         "digit_test": "Digit Stimuli Test",
-        "digit_practice_instruction_actual_test": "YOU ARE ABOUT TO BEGIN THE PPST TEST WITH DIGIT STIMULI. PLEASE CHOOSE THE START TEST BUTTON WHEN YOU ARE READY TO BEGIN.",
+        "mixed_test": "Mixed Stimuli Test",
+        "mixed_practice_test": "Mixed Stimuli Practice Test",
+        "digit_actual_instructions": "YOU ARE ABOUT TO BEGIN THE PPST TEST WITH DIGIT STIMULI. PLEASE CHOOSE THE START TEST BUTTON WHEN YOU ARE READY TO BEGIN.",
+        "mixed_actual_instructions": "YOU ARE ABOUT TO BEGIN THE PPST TEST WITH MIXED STIMULI. PLEASE CHOOSE THE START TEST BUTTON WHEN YOU ARE READY TO BEGIN.",
+        "mixed_practice_instructions": "YOU ARE ABOUT TO BEGIN THE PPST PRACTICE TEST WITH MIXED (ALPHABET-DIGIT) STIMULI. YOU WILL GO THROUGH TWO PRACTICE STIMULUS AND RESPONSE PAGES. PLEASE CHOOSE THE START PRACTICE TEST BUTTON WHEN YOU ARE READY TO BEGIN.",
         "intro_button": "Next",
         "practice_heading": "Practice Test",
         "practice_body": [
@@ -104,6 +108,7 @@ PRACTICE_TEXT = {
             "PRACTICE TEST BUTTON WHEN YOU ARE READY TO BEGIN.",
         ],
         "practice_button": "Start Practice Test",
+        "actual_test_button": "Start Test",
     },
     "es": {
         "title": "Instrucciones de la Prueba",
@@ -116,7 +121,11 @@ PRACTICE_TEXT = {
             "SUS RESPUESTAS PERMANECEN ANÓNIMAS",
         ],
         "digit_test": "Prueba de Estímulos de Dígitos",
-        "digit_practice_instruction_actual_test": "ESTÁ A PUNTO DE COMENZAR LA PRUEBA PPST CON ESTÍMULOS DE DÍGITOS. POR FAVOR, ELIJA EL BOTÓN COMENZAR PRUEBA CUANDO ESTÉ LISTO PARA INICIAR.",
+        "mixed_test": "Prueba de Estímulos Mixtos",
+        "mixed_practice_test": "Prueba de Práctica de Estímulos Mixtos",
+        "digit_actual_instructions": "ESTÁ A PUNTO DE COMENZAR LA PRUEBA PPST CON ESTÍMULOS DE DÍGITOS. POR FAVOR, ELIJA EL BOTÓN COMENZAR PRUEBA CUANDO ESTÉ LISTO PARA INICIAR.",
+        "mixed_actual_instructions": "ESTÁ A PUNTO DE COMENZAR LA PRUEBA PPST CON ESTÍMULOS MIXTOS. POR FAVOR, ELIJA EL BOTÓN COMENZAR PRUEBA CUANDO ESTÉ LISTO PARA INICIAR.",
+        "mixed_practice_instructions": "ESTÁ A PUNTO DE COMENZAR LA PRUEBA DE PRÁCTICA PPST CON ESTÍMULOS MIXTOS (ALFABETO-DÍGITO). PASARÁ POR DOS PÁGINAS DE ESTÍMULO Y RESPUESTA DE PRÁCTICA. POR FAVOR, ELIJA EL BOTÓN COMENZAR PRUEBA CUANDO ESTÉ LISTO PARA INICIAR.",
         "intro_button": "Siguiente",
         "practice_heading": "Prueba de Práctica",
         "practice_body": [
@@ -126,10 +135,11 @@ PRACTICE_TEXT = {
             "COMENZAR PRÁCTICA CUANDO ESTÉ LISTO PARA INICIAR.",
         ],
         "practice_button": "Comenzar Práctica",
+        "actual_test_button": "Comenzar Prueba",
     }
 }
 
-PRACTICE_STIMULI_TEXT = {
+PRACTICE_DIGIT_TEXT = {
     "en": {
         "title": "Practice Test Digit Stimuli",
         "title_response": "Practice Test Digit Stimuli Response",
@@ -152,7 +162,7 @@ PRACTICE_STIMULI_TEXT = {
     }
 }
 
-STIMULI_TEXT = {
+DIGIT_TEXT = {
     "en": {
         "title": "Digit Stimuli",
         "title_response": "Digit Stimuli Response",
@@ -170,6 +180,44 @@ STIMULI_TEXT = {
         "title_mixed_response": "Respuesta de Estímulos Mixtos",
         "sequence": "Secuencia mostrada aquí",
         "prompt": "Por favor, ingrese los dígitos en orden ascendente",
+        "submit": "Enviar",
+        "next": "Siguiente",
+    }
+}
+
+PRACTICE_MIXED_TEXT = {
+    "en": {
+        "title": "Practice Test Mixed Stimuli",
+        "title_response": "Practice Test Mixed Stimuli Response",
+        "sequence": "Sequence shown here",
+        "prompt": "Please Enter Digits in Ascending Order and Letters Alphabetically",
+        "submit": "Submit",
+        "next": "Next",
+    },
+    "es": {
+        "title": "Prueba de práctica con estímulos mixtos",
+        "title_response": "Prueba de práctica con estímulos mixtos y respuesta",
+        "sequence": "Secuencia mostrada aquí",
+        "prompt": "Por favor, ingrese dígitos en orden ascendente y letras alfabéticamente",
+        "submit": "Enviar",
+        "next": "Siguiente",
+    }
+}
+
+MIXED_TEXT = {
+    "en": {
+        "title": "Mixed Stimuli",
+        "title_response": "Mixed Stimuli Response",
+        "sequence": "Sequence shown here",
+        "prompt": "Please Enter Digits in Ascending Order and Letters Alphabetically",
+        "submit": "Submit",
+        "next": "Next",
+    },
+    "es": {
+        "title": "Estímulos Mixtos",
+        "title_response": "Respuesta de Estímulos Mixtos",
+        "sequence": "Secuencia mostrada aquí",
+        "prompt": "Por favor, ingrese dígitos en orden ascendente y letras alfabéticamente",
         "submit": "Enviar",
         "next": "Siguiente",
     }
@@ -245,11 +293,11 @@ def practice_stimulus(request):
     })
 
 @require_GET
-def digit_practice_instruction_actual_test(request):
+def digit_actual_instructions(request):
     lang = get_current_lang(request)
     current_theme = get_current_theme(request)
 
-    return render(request, "htmx/digit_practice_instruction_actualTest.html", {
+    return render(request, "htmx/digit_actual_instructions.html", {
         "text": PRACTICE_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
@@ -455,7 +503,7 @@ def practice_digit_stimuli_1(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_1.html", {
-        "text": PRACTICE_STIMULI_TEXT[lang],
+        "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -467,7 +515,7 @@ def practice_digit_stimuli_1_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_1_response.html", {
-        "text": PRACTICE_STIMULI_TEXT[lang],
+        "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -478,7 +526,7 @@ def practice_digit_stimuli_2(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_2.html", {
-        "text": PRACTICE_STIMULI_TEXT[lang],
+        "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -490,7 +538,7 @@ def practice_digit_stimuli_2_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_2_response.html", {
-        "text": PRACTICE_STIMULI_TEXT[lang],
+        "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -501,7 +549,7 @@ def digit_stimuli_1(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_1.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -513,7 +561,7 @@ def digit_stimuli_1_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_1_response.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -524,7 +572,7 @@ def digit_stimuli_2(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_2.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -536,7 +584,7 @@ def digit_stimuli_2_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_2_response.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -547,7 +595,7 @@ def digit_stimuli_3(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_3.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -559,7 +607,7 @@ def digit_stimuli_3_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_3_response.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -570,7 +618,7 @@ def digit_stimuli_4(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_4.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -581,7 +629,7 @@ def digit_stimuli_4_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_4_response.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -592,7 +640,7 @@ def digit_stimuli_5(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_5.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -604,7 +652,7 @@ def digit_stimuli_5_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_5_response.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -615,7 +663,7 @@ def digit_stimuli_6(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_6.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -626,7 +674,7 @@ def digit_stimuli_6_response(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_stimuli_6_response.html", {
-        "text": STIMULI_TEXT[lang],
+        "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -643,11 +691,199 @@ def home(request):
     })
 
 @require_GET
-def mixed_stimuli_practice_test(request):
+def mixed_practice_instructions(request):
     lang = get_current_lang(request)
     current_theme = get_current_theme(request)
 
-    return render(request, "htmx/mixed_stimuli_practice_test.html", {
+    return render(request, "htmx/mixed_practice_instructions.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+    
+@require_GET
+def practice_mixed_stimuli_1(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_mixed_stimuli_1.html", {
+        "text": PRACTICE_MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+
+@require_GET
+def practice_mixed_stimuli_1_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_mixed_stimuli_1_response.html", {
+        "text": PRACTICE_MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+    
+@require_GET
+def practice_mixed_stimuli_2(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_mixed_stimuli_2.html", {
+        "text": PRACTICE_MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def practice_mixed_stimuli_2_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/practice_mixed_stimuli_2_response.html", {
+        "text": PRACTICE_MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_actual_instructions(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_actual_instructions.html", {
+        "text": PRACTICE_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_1(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_1.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+    
+@require_GET
+def mixed_stimuli_1_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_1_response.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_2(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_2.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_2_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_2_response.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_3(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_3.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_3_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_3_response.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_4(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_4.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+    
+@require_GET
+def mixed_stimuli_4_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_4_response.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_5(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_5.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_5_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_5_response.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_6(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_6.html", {
+        "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def mixed_stimuli_6_response(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/mixed_stimuli_6_response.html", {
+        "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
