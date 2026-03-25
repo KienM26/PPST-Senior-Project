@@ -17,7 +17,6 @@ urlpatterns = [
     path("practiceTestPage", views.practice_test_page, name="practiceTestPage"),
     path("startPracticeTest", views.start_practice_test, name="startPracticeTest"),
     path("practiceStimulus", views.practice_stimulus, name="practiceStimulus"),
-    
 
     ##practice exam select language and accessibility
     path("doctorPortal", views.doctor_portal, name="doctorPortal"),
@@ -32,13 +31,13 @@ urlpatterns = [
     path("digitPracticeInstructions", views.digit_practice_instructions, name="digitPracticeInstructions"),
     path("saveVoice", views.save_voice, name="saveVoice"),
     
-    ##practice exam
+    ##digit stimuli exam
     path("practice_digit_stimuli_1_response", views.practice_digit_stimuli_1_response, name="practiceDigitStimuli1Response"),
     path("practice_digit_stimuli_1", views.practice_digit_stimuli_1, name="practiceDigitStimuli1"),
     path("practice_digit_stimuli_2_response", views.practice_digit_stimuli_2_response, name="practiceDigitStimuli2Response"),
     path("practice_digit_stimuli_2", views.practice_digit_stimuli_2, name="practiceDigitStimuli2"),
     
-    path("digitPracticeInstructionsActualTest", views.digit_practice_instruction_actual_test, name="digitPracticeInstructionsActualTest"),
+    path("digitActualInstructions", views.digit_actual_instructions, name="digitActualInstructions"),
 
     path("digit_stimuli_1", views.digit_stimuli_1, name="digitStimuli1"),
     path("digit_stimuli_1_response", views.digit_stimuli_1_response, name="digitStimuli1Response"),
@@ -53,6 +52,26 @@ urlpatterns = [
     path("digit_stimuli_6", views.digit_stimuli_6, name="digitStimuli6"),
     path("digit_stimuli_6_response", views.digit_stimuli_6_response, name="digitStimuli6Response"),
 
-    path("mixed_stimuli_practice_test", views.mixed_stimuli_practice_test, name="mixedStimuliPracticeTest"),
+    ##mixed stimuli exam
+    path("mixedPracticeInstructions", views.mixed_practice_instructions, name="mixedPracticeInstructions"),
+    
+    path("practice_mixed_stimuli_1", views.practice_mixed_stimuli_1, name="practiceMixedStimuli1"),
+    path("practice_mixed_stimuli_1_response", views.practice_mixed_stimuli_1_response, name="practiceMixedStimuli1Response"),
+    path("practice_mixed_stimuli_2", views.practice_mixed_stimuli_2, name="practiceMixedStimuli2"),
+    path("practice_mixed_stimuli_2_response", views.practice_mixed_stimuli_2_response, name="practiceMixedStimuli2Response"),
+    
+    path("mixedActualInstructions", views.mixed_actual_instructions, name="mixedActualInstructions"),
 
+    path("mixed_stimuli_1", views.mixed_stimuli_1, name="mixedStimuli1"),
+    path("mixed_stimuli_1_response", views.mixed_stimuli_1_response, name="mixedStimuli1Response"),
+    path("mixed_stimuli_2", views.mixed_stimuli_2,  name="mixedStimuli2"),
+    path("mixed_stimuli_2_response", views.mixed_stimuli_2_response, name="mixedStimuli2Response"),
+    path("mixed_stimuli_3", views.mixed_stimuli_3, name="mixedStimuli3"),
+    path("mixed_stimuli_3_response", views.mixed_stimuli_3_response, name="mixedStimuli3Response"),
+    path("mixed_stimuli_4", views.mixed_stimuli_4, name="mixedStimuli4"),
+    path("mixed_stimuli_4_response", views.mixed_stimuli_4_response, name="mixedStimuli4Response"),
+    path("mixed_stimuli_5", views.mixed_stimuli_5, name="mixedStimuli5"),
+    path("mixed_stimuli_5_response", views.mixed_stimuli_5_response, name="mixedStimuli5Response"),
+    path("mixed_stimuli_6", views.mixed_stimuli_6, name="mixedStimuli6"),
+    path("mixed_stimuli_6_response", views.mixed_stimuli_6_response, name="mixedStimuli6Response")
 ]

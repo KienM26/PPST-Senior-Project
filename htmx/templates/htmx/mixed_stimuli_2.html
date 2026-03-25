@@ -1,0 +1,101 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>{{ text.page_title|default:"Mixed Stimuli 2" }}</title>
+
+<link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+
+<style>
+:root {
+    --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+    --button-color: {{ current_theme.button|default:"#0f9db7" }};
+    --page-bg: #efeded;
+    --panel-bg: #ffffff;
+    --text-dark: #111111;
+}
+
+.stimulus-panel{
+    background: var(--panel-bg);
+    border: 1px solid #999;
+    border-radius: 6px;
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 80px 20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.sequence-box{
+    width:400px;
+    height:400px;
+    border:2px solid #333;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:120px;
+    font-weight:600;
+    text-align:center;
+    line-height:1.2;
+}
+
+@media (max-width: 700px){
+    .sequence-box{
+        width:280px;
+        height:280px;
+        font-size:80px;
+    }
+}
+</style>
+
+</head>
+
+<body style="background: var(--page-bg);">
+
+<header class="top-bar">
+    <div class="logo-wrap">
+        <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+    </div>
+
+    <h1 class="title">{{ text.title_mixed }} 2</h1>
+
+    <div class="speaker-wrap">
+        <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+    </div>
+
+    <div class="lang-badge">
+        {{ lang_info.label }}
+        <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+    </div>
+</header>
+
+<div class="gray-line"></div>
+
+<main class="stimulus-panel">
+    <div class="sequence-box" id="sequence-box"></div>
+</main>
+
+<script>
+    const sequence = ["3", "7", "K", "2", "M"];
+    let index = 0;
+
+    function showNext() {
+        const box = document.getElementById("sequence-box");
+        if (index < sequence.length) {
+            box.textContent = sequence[index];
+            index++;
+            setTimeout(showNext, 2000);
+        } else {
+            window.location.href = "{% url 'htmx:mixedStimuli2Response' %}";
+        }
+    }
+
+    window.onload = () => setTimeout(showNext, 500);
+</script>
+
+</body>
+</html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Instructions</title>
+    <title>Mixed Stimuli Instructions</title>
 
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
 
@@ -63,7 +63,7 @@
             <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
 
-        <h1 class="title">Test Instructions</h1>
+        <h1 class="title">{{ text.title }}</h1>
 
         <div class="speaker-wrap">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
@@ -78,18 +78,14 @@
     <div class="gray-line"></div>
 
     <main class="instruction-panel">
-        <h2 class="instruction-title">Mixed Stimuli<br>Practice Test 1</h2>
+        <h2 class="instruction-title">{{ text.mixed_test }}</h2>
 
         <p class="instruction-text">
-            YOU ARE ABOUT TO BEGIN THE PPST PRACTICE TEST WITH
-            MIXED (ALPHABET-DIGIT) STIMULI. YOU WILL GO THROUGH
-            TWO PRACTICE STIMULUS AND RESPONSE PAGES. PLEASE
-            CHOOSE THE START PRACTICE TEST BUTTON WHEN YOU ARE
-            READY TO BEGIN.
+            {{ text.mixed_actual_instructions }}
         </p>
 
-        <form method="get" action="#">
-            <button type="submit" class="btn centered">Start Practice Test</button>
+        <form method="get" action="{% url 'htmx:mixedStimuli1' %}">
+            <button type="submit" class="btn centered">{{ text.actual_test_button }}</button>
         </form>
     </main>
 
