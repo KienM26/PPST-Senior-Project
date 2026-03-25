@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{{ text.title_mixed_response }} 1</title>
+    <title>{{ text.title_response }} 1</title>
 
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
 
@@ -26,7 +26,7 @@
             <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
 
-        <h1 class="title">{{ text.title_mixed_response }} 1</h1>
+        <h1 class="title">{{ text.title_response }} 1</h1>
 
         <div class="speaker-wrap">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
@@ -34,7 +34,7 @@
 
         <div class="lang-badge">
             {{ lang_info.label }}
-            <img src="{% static lang_info.flag }}" alt="{{ lang_info.label }} flag">
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
         </div>
     </header>
 
@@ -49,6 +49,7 @@
         <form method="get" action="{% url 'htmx:mixedStimuli2' %}">
             <input type="hidden" name="response" id="response">
 
+        <div class="keypad-container">
             <div class="keypad">
 
                 <button type="button" class="key" onclick="press(1)">1</button>
@@ -80,6 +81,8 @@
                 <button type="button" class="key" onclick="press('I')">I</button>
 
             </div>
+
+        </div>
 
             <div class="submit-wrap">
                 <button type="submit" class="btn">{{ text.submit }}</button>

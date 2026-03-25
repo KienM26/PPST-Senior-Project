@@ -73,5 +73,7 @@ urlpatterns = [
     path("mixed_stimuli_5", views.mixed_stimuli_5, name="mixedStimuli5"),
     path("mixed_stimuli_5_response", views.mixed_stimuli_5_response, name="mixedStimuli5Response"),
     path("mixed_stimuli_6", views.mixed_stimuli_6, name="mixedStimuli6"),
-    path("mixed_stimuli_6_response", views.mixed_stimuli_6_response, name="mixedStimuli6Response")
+    path("mixed_stimuli_6_response", views.mixed_stimuli_6_response, name="mixedStimuli6Response"),
+    path("exit", views.exit, name="exit")
+
 ]

@@ -223,6 +223,19 @@ MIXED_TEXT = {
     }
 }
 
+TEST_COMPLETION_TEXT = {
+    "en": {
+        "title": "Test Complete",
+        "message": "Thank you for completing the test. Your responses have been recorded.",
+        "exit": "Exit",
+    },
+    "es": {
+        "title": "Prueba Completa",
+        "message": "Gracias por completar la prueba. Sus respuestas han sido registradas.",
+        "exit": "Salir",
+    }
+}
+
 def get_current_lang(request):
     lang = request.session.get("lang", "en")
     if lang not in PRACTICE_TEXT:
@@ -698,6 +711,7 @@ def mixed_practice_instructions(request):
     return render(request, "htmx/mixed_practice_instructions.html", {
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "text": PRACTICE_TEXT[lang],  
     })
     
 @require_GET
@@ -729,7 +743,7 @@ def practice_mixed_stimuli_2(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_mixed_stimuli_2.html", {
-        "text": PRACTICE_MIXED_TEXT[lang],
+        "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
@@ -884,6 +898,17 @@ def mixed_stimuli_6_response(request):
 
     return render(request, "htmx/mixed_stimuli_6_response.html", {
         "text": MIXED_TEXT[lang],
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+    })
+
+@require_GET
+def exit(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/exit.html", {
+        "text": TEST_COMPLETION_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })

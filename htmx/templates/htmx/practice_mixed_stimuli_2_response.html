@@ -27,7 +27,7 @@
             <img src="{% static 'htmx/images/ppst-logo.png' %}">
         </div>
 
-        <h1 class="title">{{ text.title_mixed_response }} 2</h1>
+        <h1 class="title">{{ text.title_response }} 2</h1>
 
         <div class="speaker-wrap">
             <img src="{% static 'htmx/images/speaker.png' %}">
@@ -53,6 +53,7 @@
 
             <input type="hidden" name="response" id="response">
 
+        <div class="keypad-container">
             <div class="keypad">
 
                 <button type="button" class="key" onclick="press(1)">1</button>
@@ -84,6 +85,7 @@
                 <button type="button" class="key" onclick="press('I')">I</button>
 
             </div>
+        </div>
 
             <div class="submit-wrap">
                 <button class="btn">{{ text.submit }}</button>
