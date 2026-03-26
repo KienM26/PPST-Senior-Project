@@ -26,7 +26,7 @@
 
         <h1 class="title">{{ text.title }}</h1>
 
-        <div class="speaker-wrap">
+        <div class="speaker-wrap" onclick="playAudio('Select_Voice')" style="cursor:pointer;">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
         </div>
 
@@ -85,22 +85,38 @@
         </form>
 
     </main>
-
-</body>
-
 <script>
-    const buttons = document.querySelectorAll('.voice-option');
-    const input = document.getElementById('voiceInput');
+const buttons = document.querySelectorAll('.voice-option');
+const input = document.getElementById('voiceInput');
 
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            buttons.forEach(b => b.classList.remove('selected'));
-
-            btn.classList.add('selected');
-
-            input.value = btn.dataset.voice;
-        });
+buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        input.value = btn.dataset.voice;
+        localStorage.setItem("selectedVoice", btn.dataset.voice);
     });
+});
+
+    function playAudio(baseName) {
+    const langValue = "{{ lang|default:'en' }}";
+    const lang = langValue === "es" ? "spanish" : "english";
+
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (lang === "english" && voice === "female") fileName = baseName + ".mp3";
+    if (lang === "english" && voice === "male") fileName = baseName + "1.mp3";
+    if (lang === "spanish" && voice === "female") fileName = baseName + "2.mp3";
+    if (lang === "spanish" && voice === "male") fileName = baseName + "3.mp3";
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
 </script>
+</body>
 
 </html>
