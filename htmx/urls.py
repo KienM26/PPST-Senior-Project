@@ -19,7 +19,6 @@ urlpatterns = [
     path("practiceStimulus", views.practice_stimulus, name="practiceStimulus"),
 
     ##practice exam select language and accessibility
-    path("doctorPortal", views.doctor_portal, name="doctorPortal"),
     path("selectLanguage", views.select_language, name="SelectLanguage"),
     path("accessibility", views.accessibility, name="Accessibility"),
     path("saveAccessibility", views.save_accessibility, name="saveAccessibility"),
@@ -74,6 +73,17 @@ urlpatterns = [
     path("mixed_stimuli_5_response", views.mixed_stimuli_5_response, name="mixedStimuli5Response"),
     path("mixed_stimuli_6", views.mixed_stimuli_6, name="mixedStimuli6"),
     path("mixed_stimuli_6_response", views.mixed_stimuli_6_response, name="mixedStimuli6Response"),
-    path("exit", views.exit, name="exit")
+    path("exit", views.exit, name="exit"),
 
+    ## doctor portal
+    path("doctor_login", views.doctor_login, name="doctor_login"),
+    path("doctor_create_account", views.doctor_create_account, name="doctor_create_account"),
+    path("doctor_dashboard", views.doctor_dashboard, name="doctor_dashboard"),
+    path("doctor_create_test", views.doctor_create_test, name="doctor_create_test"),
+    path("doctor_test_results", views.doctor_test_results, name="doctor_test_results"),
+    path("doctor_test_result/<int:test_id>", views.doctor_test_result, name="doctor_test_result"),
+    path("doctor_settings", views.doctor_settings, name="doctor_settings"),
+    path("doctor_support", views.doctor_support, name="doctor_support"),
+    path("doctor_logout", views.doctor_logout, name="doctor_logout"),
+    path("doctor_forgot_password", views.doctor_forgot_password, name="doctor_forgot_password"),
 ]

@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+
+    <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
+</head>
+
+<body class="page">
+
+    <!-- NAVBAR (FULL WIDTH) -->
+    <header class="navbar">
+        <div class="nav-left">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
+        </div>
+
+        <nav class="nav-right">
+            <a href="{% url 'htmx:doctor_dashboard' %}">Dashboard</a>
+            <a href="{% url 'htmx:doctor_create_test' %}">Create Test</a>
+            <a href="{% url 'htmx:doctor_test_results' %}">Results</a>
+            <a href="{% url 'htmx:doctor_settings' %}" class="nav-active">Settings</a>
+            <a href="{% url 'htmx:doctor_support' %}">Support</a>
+            <a href="{% url 'htmx:doctor_logout' %}">Logout</a>
+        </nav>
+    </header>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <section class="create-test-layout settings-layout">
+            <h1>Account Settings</h1>
+
+            <article class="portal-card">
+                <h2>Profile Information</h2>
+                <table>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Placeholder</th>
+                    </tr>
+                    <tr>
+                        <td>Email Address</td>
+                        <td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>Hospital/Organization</td>
+                        <td>Placeholder</td>
+                    </tr>
+                    <tr>
+                        <td>Doctor's Office/Practice Name</td>
+                        <td>Placeholder</td>
+                    </tr>
+                </table>
+                <!-- Will link to a profile update page when created-->
+                <a href="" class="btn">Update Profile</a>
+            </article>
+
+            <article class="portal-card">
+                <h2>New Patient Test</h2>
+                <form method="post" action="#" class="create-test-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="patient_age">Age of Patient <span class="required-asterisk">*</span></label>
+                        <input type="number" id="patient_age" name="patient_age" min="1" max="120" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="device_email">Test Device Email <span class="required-asterisk">*</span></label>
+                        <input type="email" id="device_email" name="device_email" placeholder="device@example.com"
+                            required>
+                    </div>
+                    <button type="button" class="btn" id="generate-btn" onclick="showTestModal()">Generate Link</button>
+                </form>
+            </article>
+        </section>
+
+    </main>
+
+</body>
+
+</html>

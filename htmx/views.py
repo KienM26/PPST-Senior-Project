@@ -406,7 +406,46 @@ def save_voice(request):
 
 @require_GET
 def doctor_portal(request):
-    return render(request, 'htmx/doctor_portal.html', {})
+    return render(request, 'htmx/doctorportal/doctor_portal.html', {})
+
+@require_GET
+def doctor_login(request):
+    return render(request, 'htmx/doctorportal/doctor_login.html', {})
+
+@require_GET
+def doctor_create_account(request):
+    return render(request, 'htmx/doctorportal/doctor_create_account.html', {})
+
+@require_GET
+def doctor_dashboard(request):
+    return render(request, 'htmx/doctorportal/doctor_dashboard.html', {})
+
+@require_GET
+def doctor_create_test(request):
+    return render(request, 'htmx/doctorportal/doctor_create_test.html', {})
+
+@require_GET
+def doctor_test_results(request):
+    return render(request, 'htmx/doctorportal/doctor_test_results.html', {})
+
+@require_GET
+def doctor_test_result(request, test_id):
+    return render(request, 'htmx/doctorportal/doctor_test_result.html', {'test_id': test_id})
+
+@require_GET
+def doctor_settings(request):
+    return render(request, 'htmx/doctorportal/doctor_settings.html', {})
+
+@require_GET
+def doctor_support(request):
+    return render(request, 'htmx/doctorportal/doctor_support.html', {})
+
+def doctor_logout(request):
+    return redirect('htmx:doctor_login')
+
+@require_GET
+def doctor_forgot_password(request):
+    return render(request, 'htmx/doctorportal/doctor_forgot_password.html', {})
 
 @require_GET
 def demo_bootstrap(request):
