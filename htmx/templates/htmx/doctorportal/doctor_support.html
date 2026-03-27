@@ -1,15 +1,16 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPST Home</title>
+    <title>Support</title>
 
     <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
 </head>
 
-<body class="home-page">
+<body class="page">
 
     <!-- NAVBAR (FULL WIDTH) -->
     <header class="navbar">
@@ -18,12 +19,15 @@
         </div>
 
         <nav class="nav-right">
-            <a href="#">Home</a>
-            <a href="#">Login</a>
-            <a href="#">Create Account</a>
-            <a href="#">About</a>
+            <a href="{% url 'htmx:doctor_dashboard' %}">Dashboard</a>
+            <a href="{% url 'htmx:doctor_create_test' %}">Create Test</a>
+            <a href="{% url 'htmx:doctor_test_results' %}">Results</a>
+            <a href="{% url 'htmx:doctor_settings' %}">Settings</a>
+            <a href="{% url 'htmx:doctor_support' %}" class="nav-active">Support</a>
+            <a href="{% url 'htmx:doctor_logout' %}">Logout</a>
         </nav>
     </header>
+
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -53,4 +57,5 @@
     </main>
 
 </body>
+
 </html>

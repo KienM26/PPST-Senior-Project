@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPST Home</title>
+
+    <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
+</head>
+
+<body class="page login-page">
+
+    <!-- NAVBAR (FULL WIDTH) -->
+    <header class="navbar">
+        <div class="nav-left">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
+        </div>
+
+        <!-- NO NAVIGATION LINKS FOR LOGIN PAGE -->
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <section class="login-section">
+
+            <!-- LEFT COLUMN: Login -->
+            <div class="login-left">
+                <h1>Welcome Back</h1>
+                <p class="subtitle">
+                    Need a PPST account? <a href="{% url 'htmx:doctor_create_account' %}">Create account</a>
+                </p>
+
+                <form method="post" action="#" class="login-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Email or Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter your username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn">Sign In</button>
+                    <p class="forgot-link">
+                        <a href="{% url 'htmx:doctor_forgot_password' %}">Forgot password?</a>
+                    </p>
+                </form>
+            </div>
+
+            <!-- RIGHT COLUMN: Placeholder Image -->
+            <div class="login-right">
+                <img src="https://via.placeholder.com/500x400" alt="Login illustration">
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
