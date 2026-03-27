@@ -46,7 +46,7 @@
             {{ text.prompt }}
         </div>
 
-        <form method="get" action="{% url 'htmx:digitStimuli6' %}">
+        <form method="get" action="{% url 'htmx:digitStimuli6' %}" onsubmit="saveAndContinue()">
             <input type="hidden" name="response" id="response">
 
             <div class="keypad">
@@ -73,12 +73,16 @@
 
     </main>
 
+    <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
     <script>
-        let answer = [];
+        ppstTestBuffer.startCapture();
 
         function press(num) {
-            answer.push(num);
-            document.getElementById("response").value = answer.join("");
+            ppstTestBuffer.press(num);
+        }
+
+        function saveAndContinue() {
+            ppstTestBuffer.saveCurrentResponse("digit_stimuli_5", "digit");
         }
     </script>
 
