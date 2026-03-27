@@ -16,6 +16,9 @@ urlpatterns = [
     path("practiceTestNext", views.practice_test_next, name="practiceTestNext"),
     path("practiceTestPage", views.practice_test_page, name="practiceTestPage"),
     path("startPracticeTest", views.start_practice_test, name="startPracticeTest"),
+    path("startDigitTest", views.start_digit_test, name="startDigitTest"),
+    path("startMixedTest", views.start_mixed_test, name="startMixedTest"),
+    path("submitTestResponses", views.submit_test_responses, name="submitTestResponses"),
     path("practiceStimulus", views.practice_stimulus, name="practiceStimulus"),
 
     ##practice exam select language and accessibility

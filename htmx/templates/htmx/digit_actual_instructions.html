@@ -84,10 +84,13 @@
             {{ text.digit_actual_instructions }}
         </p>
 
-        <form method="get" action="{% url 'htmx:digitStimuli1' %}">
+        <form method="post" action="{% url 'htmx:startDigitTest' %}" onsubmit="ppstTestBuffer.clear()">
+            {% csrf_token %}
             <button type="submit" class="btn centered">{{ text.actual_test_button }}</button>
         </form>
     </main>
+
+    <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
 
 </body>
 </html>

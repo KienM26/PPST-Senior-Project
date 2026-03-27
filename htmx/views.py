@@ -1,6 +1,31 @@
-from django.shortcuts import render, redirect
-from django.views.decorators.http import require_GET, require_POST
 import random
+import json
+
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_POST
+
+from database.models import Latency, Response, Results, Stimulus, Test
+
+
+DIGIT_STIMULI_DATA = [
+    {"key": "digit_stimuli_1", "sequence": "37K2M", "correct_answer": "237"},
+    {"key": "digit_stimuli_2", "sequence": "49L1P", "correct_answer": "149"},
+    {"key": "digit_stimuli_3", "sequence": "82Q5R", "correct_answer": "258"},
+    {"key": "digit_stimuli_4", "sequence": "61S4T", "correct_answer": "146"},
+    {"key": "digit_stimuli_5", "sequence": "93U2V", "correct_answer": "239"},
+    {"key": "digit_stimuli_6", "sequence": "51W8X", "correct_answer": "158"},
+]
+
+MIXED_STIMULI_DATA = [
+    {"key": "mixed_stimuli_1", "sequence": "37K2M", "correct_answer": "237KM"},
+    {"key": "mixed_stimuli_2", "sequence": "37K2M", "correct_answer": "237KM"},
+    {"key": "mixed_stimuli_3", "sequence": "37K2M", "correct_answer": "237KM"},
+    {"key": "mixed_stimuli_4", "sequence": "37K2M", "correct_answer": "237KM"},
+    {"key": "mixed_stimuli_5", "sequence": "37K2M", "correct_answer": "237KM"},
+    {"key": "mixed_stimuli_6", "sequence": "37K2M", "correct_answer": "237KM"},
+]
 
 
 ACCESSIBILITY_THEMES = {
@@ -248,6 +273,29 @@ def get_current_theme(request):
         theme_key = "teal"
     return ACCESSIBILITY_THEMES[theme_key]
 
+
+def initialize_test_session(request, stimuli_data, stimulus_type):
+    test = Test.objects.create(
+        status="active",
+        test_taker_age=12,
+        is_independent=True,
+    )
+
+    stimulus_ids = {}
+    for stimulus in stimuli_data:
+        created = Stimulus.objects.create(
+            test=test,
+            stimulus_string=stimulus["sequence"],
+            correct_answer=stimulus["correct_answer"],
+            stimulus_type=stimulus_type,
+            span_length=len(stimulus["sequence"]),
+        )
+        stimulus_ids[stimulus["key"]] = created.id
+
+    request.session["current_test_id"] = test.id
+    request.session["current_test_type"] = stimulus_type
+    request.session["current_test_stimulus_ids"] = stimulus_ids
+
 @require_GET
 def demo(request):
     return render(request, 'htmx/demo.html', randomimg())
@@ -293,6 +341,44 @@ def practice_test_page(request):
 def start_practice_test(request):
     request.session["practice_test_started"] = True
     return redirect("htmx:practiceDigitStimuli1")
+
+
+@require_POST
+def start_digit_test(request):
+    combined_stimuli = [
+        {**stimulus, "stimulus_type": "digit"} for stimulus in DIGIT_STIMULI_DATA
+    ] + [
+        {**stimulus, "stimulus_type": "mixed"} for stimulus in MIXED_STIMULI_DATA
+    ]
+
+    test = Test.objects.create(
+        status="active",
+        test_taker_age=12,
+        is_independent=True,
+    )
+
+    stimulus_ids = {}
+    for stimulus in combined_stimuli:
+        created = Stimulus.objects.create(
+            test=test,
+            stimulus_string=stimulus["sequence"],
+            correct_answer=stimulus["correct_answer"],
+            stimulus_type=stimulus["stimulus_type"],
+            span_length=len(stimulus["sequence"]),
+        )
+        stimulus_ids[stimulus["key"]] = created.id
+
+    request.session["current_test_id"] = test.id
+    request.session["current_test_type"] = "full"
+    request.session["current_test_stimulus_ids"] = stimulus_ids
+    return redirect("htmx:digitStimuli1")
+
+
+@require_POST
+def start_mixed_test(request):
+    if not request.session.get("current_test_id"):
+        initialize_test_session(request, MIXED_STIMULI_DATA, "mixed")
+    return redirect("htmx:mixedStimuli1")
 
 
 @require_GET
@@ -912,3 +998,93 @@ def exit(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
+
+
+@require_POST
+def submit_test_responses(request):
+    current_test_id = request.session.get("current_test_id")
+    stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+
+    if not current_test_id or not stimulus_ids:
+        return JsonResponse({"error": "No active test session found."}, status=400)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON payload."}, status=400)
+
+    submitted_responses = payload.get("responses", [])
+    if not isinstance(submitted_responses, list):
+        return JsonResponse({"error": "Responses payload must be a list."}, status=400)
+
+    test = get_object_or_404(Test, id=current_test_id)
+
+    with transaction.atomic():
+        Response.objects.filter(test=test).delete()
+
+        num_correct = 0
+        num_incorrect = 0
+        total_time = 0
+
+        for item in submitted_responses:
+            stimulus_key = item.get("stimulus_key")
+            stimulus_id = stimulus_ids.get(stimulus_key)
+            if not stimulus_id:
+                continue
+
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id, test=test)
+            response_string = str(item.get("response_string", ""))
+            response = Response.objects.create(
+                test=test,
+                stimulus=stimulus,
+                response_string=response_string,
+                is_correct=response_string == stimulus.correct_answer,
+            )
+
+            if response.is_correct:
+                num_correct += 1
+            else:
+                num_incorrect += 1
+
+            started_at = item.get("started_at")
+            if isinstance(started_at, int):
+                submitted_at = item.get("submitted_at", started_at)
+                if isinstance(submitted_at, int) and submitted_at >= started_at:
+                    total_time += submitted_at - started_at
+
+            previous_timestamp = started_at
+            for index, click in enumerate(item.get("clicks", []), start=1):
+                click_value = str(click.get("value", ""))[:1]
+                click_timestamp = click.get("timestamp")
+                if not click_value or not isinstance(click_timestamp, int):
+                    continue
+
+                latency_time = 0
+                if isinstance(previous_timestamp, int) and click_timestamp >= previous_timestamp:
+                    latency_time = click_timestamp - previous_timestamp
+                previous_timestamp = click_timestamp
+
+                Latency.objects.create(
+                    response=response,
+                    input_order=index,
+                    input_value=click_value,
+                    time=latency_time,
+                )
+
+        Results.objects.update_or_create(
+            test=test,
+            defaults={
+                "total_time": total_time,
+                "response_time": total_time,
+                "num_of_correct": num_correct,
+                "num_of_incorrect": num_incorrect,
+            },
+        )
+
+        test.status = "completed"
+        test.save(update_fields=["status"])
+
+    for key in ("current_test_id", "current_test_type", "current_test_stimulus_ids"):
+        request.session.pop(key, None)
+
+    return JsonResponse({"ok": True})
