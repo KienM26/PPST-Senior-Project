@@ -76,6 +76,8 @@ urlpatterns = [
     path("exit", views.exit, name="exit"),
 
     ## doctor portal
+    path("home", views.home, name="home"),
+    path("doctor_about", views.doctor_about, name="doctor_about"),
     path("doctor_login", views.doctor_login, name="doctor_login"),
     path("doctor_create_account", views.doctor_create_account, name="doctor_create_account"),
     path("doctor_dashboard", views.doctor_dashboard, name="doctor_dashboard"),

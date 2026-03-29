@@ -405,6 +405,21 @@ def save_voice(request):
     return redirect("htmx:digitPracticeInstructions")
 
 @require_GET
+def doctor_about(request):
+    return render(request, 'htmx/doctorportal/doctor_about.html', {})
+
+@require_GET
+def home(request):
+    lang = get_current_lang(request)
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/doctorportal/home.html", {
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+        "text": PRACTICE_HOME_TEXT[lang],  
+    })
+
+@require_GET
 def doctor_portal(request):
     return render(request, 'htmx/doctorportal/doctor_portal.html', {})
 
@@ -731,16 +746,6 @@ def digit_stimuli_6_response(request):
         "current_theme": current_theme,
     })
 
-@require_GET
-def home(request):
-    lang = get_current_lang(request)
-    current_theme = get_current_theme(request)
-
-    return render(request, "htmx/doctorportal/home.html", {
-        "lang_info": LANGUAGE_INFO[lang],
-        "current_theme": current_theme,
-        "text": PRACTICE_HOME_TEXT[lang],  
-    })
 
 @require_GET
 def mixed_practice_instructions(request):
