@@ -8,10 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ text.page_title|default:"Test Instructions" }}</title>
 
-    <!-- External CSS -->
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
 
-    <!-- Dynamic Theme Variables -->
     <style>
         :root {
             --theme-color: {{ current_theme.header|default:"#0f9db7" }};
@@ -26,26 +24,32 @@
         }
 
         @media (max-width: 700px) {
-            .top-bar { 
+            .top-bar {
                 flex-wrap: wrap;
                 justify-content: center;
                 height: auto;
                 padding: 12px 16px;
             }
-            .title { font-size: 38px; margin: 8px 0; text-align: center; flex: 1; }
+
+            .title {
+                font-size: 38px;
+                margin: 8px 0;
+                text-align: center;
+                flex: 1;
+            }
         }
     </style>
 </head>
 <body style="background: var(--page-bg);">
 
-<header class="top-bar">
+    <header class="top-bar">
         <div class="logo-wrap">
             <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
         </div>
 
         <h1 class="title">{{ text.title }}</h1>
 
-        <div class="speaker-wrap">
+        <div class="speaker-wrap" onclick="playAudio('Test_Instructions')" style="cursor:pointer;">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
         </div>
 
@@ -55,36 +59,71 @@
         </div>
     </header>
 
-<div class="gray-line"></div>
+    <div class="gray-line"></div>
 
-<main class="page-content">
-    <h2 class="prompt">
-        {{ text.intro_heading|default:"Watch the Instructions" }}
-    </h2>
+    <main class="page-content">
+        <h2 class="prompt">
+            {{ text.intro_heading|default:"Watch the Instructions" }}
+        </h2>
 
-    <!-- VIDEO SECTION -->
-    <div>
-        <video class="video" id="instructionVideo" controls autoplay>
-            <source src="{% static 'htmx/video/test_instructions_video1.mp4' %}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
+        <div>
+            <video class="video" id="instructionVideo" controls autoplay>
+                <source src="{% static 'htmx/video/test_instructions_video1.mp4' %}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
 
+<<<<<<< HEAD
     <form method="get" action="{% url 'htmx:instructionPracticeIntro' %}">        {% csrf_token %}
         <button type="submit" class="btn centered" id="nextBtn">
             {{ text.intro_button|default:"Next" }}
         </button>
     </form>
 </main>
+=======
+        <form method="get" action="{% url 'htmx:practiceDigitStimuli1' %}" style="display:flex; justify-content:center;">
+            <button type="submit" class="btn centered" id="nextBtn" disabled>
+                {{ text.intro_button|default:"Next" }}
+            </button>
+        </form>
+    </main>
+>>>>>>> a20fd29ccffcb803172e927c882a848e37f7b5c8
 
-<script>
-const video = document.getElementById("instructionVideo");
-const nextBtn = document.getElementById("nextBtn");
+    <script>
+    const video = document.getElementById('instructionVideo');
+    const nextBtn = document.getElementById('nextBtn');
 
-video.addEventListener("ended", function() {
-    nextBtn.disabled = false;
-});
+    video.addEventListener('ended', () => {
+        nextBtn.disabled = false;
+    });
+</script>
+
+    <script>
+function playAudio(baseName) {
+    const langValue = "{{ lang|default:'en' }}";
+    const lang = langValue === "es" ? "spanish" : "english";
+
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (lang === "english" && voice === "female") {
+        fileName = baseName + ".mp3";
+    } else if (lang === "english" && voice === "male") {
+        fileName = baseName + "1.mp3";
+    } else if (lang === "spanish" && voice === "female") {
+        fileName = baseName + "2.mp3";
+    } else if (lang === "spanish" && voice === "male") {
+        fileName = baseName + "3.mp3";
+    }
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
 </script>
 
 </body>
+
 </html>

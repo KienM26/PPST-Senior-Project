@@ -15,7 +15,7 @@
 
         <h1 class="title">Select Your Language</h1>
 
-        <div class="speaker-wrap">
+        <div class="speaker-wrap" onclick="playAudio('Welcome')" style="cursor:pointer;">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Audio icon">
         </div>
     </header>
@@ -45,5 +45,26 @@
             </div>
         </section>
     </main>
+
+    <script>
+function playAudio(baseName) {
+    // First page defaults
+    const lang = "english";
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (voice === "female") {
+        fileName = baseName + ".mp3";   // Welcome.mp3
+    } else {
+        fileName = baseName + "1.mp3";  // Welcome1.mp3
+    }
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
+</script>
 </body>
 </html>

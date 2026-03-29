@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Complete</title>
+
+    <!-- Use external CSS for all styling -->
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+
+ <style>
+        :root {
+            --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+            --button-color: {{ current_theme.button|default:"#0f9db7" }};
+            --page-bg: #efeded;
+            --panel-bg: #c9c4c4;
+            --text-dark: #111111;
+        }
+
+        @media (max-width: 900px) {
+            .title { font-size: 44px; }
+        }
+
+        @media (max-width: 700px) {
+            .top-bar {
+                flex-wrap: wrap;
+                justify-content: center;
+                height: auto;
+                padding: 12px 16px;
+            }
+
+            .title {
+                font-size: 38px;
+                margin: 8px 0;
+                text-align: center;
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="title">{{ text.title }}</h1>
+
+        <div class="speaker-wrap">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+        </div>
+
+        <div class="lang-badge">
+            {{ lang_info.label }}
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+        </div>
+    </header>
+
+    <div class="gray-line"></div>
+
+<main class="completion-panel panel page-content" style="margin-top: 60px; padding: 60px 30px;">
+    <h2 class="completion-title prompt" style="margin-bottom: 50px;">{{ text.test_complete }}</h2>
+
+    <p class="completion-text instructions" style="margin-bottom: 60px;">
+        {{ text.message }}
+    </p>
+
+        <!-- Exit button -->
+        <div class="centered">
+            <button class="btn" onclick="closeOrRedirect()">{{ text.exit }}</button>
+        </div>
+    </main>
+
+    <script>
+        function closeOrRedirect() {
+            window.close(); // Try to close the tab
+            setTimeout(() => {
+                window.location.href = "{% url 'htmx:home' %}"; // Fallback redirect if close is blocked
+            }, 100);
+        }
+    </script>
+
+</body>
+</html>

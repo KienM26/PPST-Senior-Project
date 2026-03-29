@@ -29,29 +29,39 @@ test1 = Test.objects.create(
 
 
 stimuli_data = [
-    ("3A7C", "37AC", 4),
-    ("U26M", "26MU", 4),
-    ("5F2A", "25AF", 4),
-    ("K3I8", "38IK", 4),
-    ("7C2L", "27CL", 4),
-    ("3A7C1", "137AC", 5),
-    ("U26M4", "246MU", 5),
-    ("5F2A9", "259AF", 5),
-    ("K3I18", "138IK", 5),
-    ("7C2L5", "257CL", 5),
+    # four span digits
+    ("1478", "1478", "digit", 4),
+    ("9356", "3569", "digit", 4),
+    ("9732", "2379", "digit", 4),
+
+    # five span digits
+    ("35486", "34568", "digit", 5),
+    ("40973", "03479", "digit", 5),
+    ("14982", "12489", "digit", 5),
+
+    # four span mixed
+    ("A2L6", "26AL", "mixed", 4),
+    ("7LU5", "57LU", "mixed", 4),
+    ("F82I", "28FI", "mixed", 4),
+
+    # five span mixed
+    ("UC86F", "68CFU", "mixed", 5),
+    ("5KI76", "567IK", "mixed", 5),
+    ("2L48k", "248KL", "mixed", 5),
+    
 ]
 
 
 stimulus_objects = []
 
 
-for stimulus_string, correct_answer, span_length in stimuli_data:
+for stimulus_string, correct_answer, stimulus_type, span_length in stimuli_data:
     stimulus_objects.append(
         Stimulus.objects.create(
             test=test1,
             stimulus_string=stimulus_string,
             correct_answer=correct_answer,
-            stimulus_type="mixed",
+            stimulus_type=stimulus_type,
             span_length=span_length
         )
     )
