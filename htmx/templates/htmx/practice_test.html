@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="{{ lang_info.code|default:'en' }}">
+<html lang="{{ lang|default:'en' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -37,8 +37,9 @@
 
     <main class="page-content">
         <form method="get" action="{% url 'htmx:selectVoice' %}" class="practice-test-form">
-                    <button type="submit" class="btn">{{ text.btn }}</button>
-                </form>
+            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
+            <button type="submit" class="btn">{{ text.btn }}</button>
+        </form>
         <div class="placeholder-row">
             <div class="placeholder-box placeholder-small">
                 <img src="{% static 'htmx/images/practice-left.jpg' %}" alt="Placeholder left image">
@@ -51,26 +52,19 @@
     
     <script>
 function playAudio(baseName) {
-    const langValue = "{{ lang|default:'en' }}";
-    const lang = langValue === "es" ? "spanish" : "english";
+    const badgeText = document.querySelector(".lang-badge")?.innerText.toLowerCase() || "";
+    const lang = badgeText.includes("es") ? "spanish" : "english";
 
     const voice = localStorage.getItem("selectedVoice") || "female";
 
     let fileName = "";
 
-    if (lang === "english" && voice === "female") {
-        fileName = baseName + ".mp3";   // Main_Landing.mp3
-    } else if (lang === "english" && voice === "male") {
-        fileName = baseName + "1.mp3";  // Main_Landing1.mp3
-    } else if (lang === "spanish" && voice === "female") {
-        fileName = baseName + "2.mp3";  // Main_Landing2.mp3
-    } else if (lang === "spanish" && voice === "male") {
-        fileName = baseName + "3.mp3";  // Main_Landing3.mp3
-    }
+    if (lang === "english" && voice === "female") fileName = baseName + ".mp3";
+    if (lang === "english" && voice === "male") fileName = baseName + "1.mp3";
+    if (lang === "spanish" && voice === "female") fileName = baseName + "2.mp3";
+    if (lang === "spanish" && voice === "male") fileName = baseName + "3.mp3";
 
-    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
-    const audio = new Audio(audioPath);
-    audio.currentTime = 0;
+    const audio = new Audio(`/static/htmx/audio/${lang}/${voice}/${fileName}`);
     audio.play();
 }
 </script>

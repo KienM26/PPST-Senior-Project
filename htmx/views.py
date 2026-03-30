@@ -47,10 +47,12 @@ ACCESSIBILITY_TEXT = {
 
 LANGUAGE_INFO = {
     "en": {
+        "code": "en",
         "label": "English",
         "flag": "htmx/images/flag-usa.png",
     },
     "es": {
+        "code": "es",
         "label": "Español",
         "flag": "htmx/images/flag-spain.png",
     }
@@ -307,10 +309,11 @@ def practice_stimulus(request):
 
 @require_GET
 def digit_actual_instructions(request):
-    lang = get_current_lang(request)
+    lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_actual_instructions.html", {
+        "lang": lang,
         "text": PRACTICE_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
@@ -355,14 +358,27 @@ def save_accessibility(request):
     request.session["lang"] = lang
     request.session["theme"] = selected_theme
 
-    return redirect("htmx:practiceTest")
+    print("SAVE_ACCESSIBILITY POST lang =", lang)
+    print("SAVE_ACCESSIBILITY session lang =", request.session.get("lang"))
+
+    return redirect(f"/htmx/practiceTest?lang={lang}")
 
 @require_GET
 def practice_test(request):
-    lang = get_current_lang(request)
+    lang = request.GET.get("lang") or request.session.get("lang") or "en"
+
+    print("PRACTICE_TEST GET lang =", request.GET.get("lang"))
+    print("PRACTICE_TEST session lang =", request.session.get("lang"))
+    print("PRACTICE_TEST final lang =", lang)
+
+    if lang not in PRACTICE_HOME_TEXT:
+        lang = "en"
+
+    request.session["lang"] = lang
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_test.html", {
+        "lang": lang,
         "text": PRACTICE_HOME_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
@@ -374,6 +390,7 @@ def digit_practice_instructions(request):
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/digit_practice_instructions.html", {
+        "lang": lang,
         "text": PRACTICE_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
@@ -566,10 +583,11 @@ def jsresponse(request):
 
 @require_GET
 def practice_digit_stimuli_1(request):
-    lang = get_current_lang(request)
+    lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_1.html", {
+        "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
@@ -578,10 +596,11 @@ def practice_digit_stimuli_1(request):
 
 @require_GET
 def practice_digit_stimuli_1_response(request):
-    lang = get_current_lang(request)
+    lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_1_response.html", {
+        "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
@@ -589,10 +608,11 @@ def practice_digit_stimuli_1_response(request):
 
 @require_GET
 def practice_digit_stimuli_2(request):
-    lang = get_current_lang(request)
+    lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_2.html", {
+        "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
@@ -601,10 +621,11 @@ def practice_digit_stimuli_2(request):
 
 @require_GET
 def practice_digit_stimuli_2_response(request):
-    lang = get_current_lang(request)
+    lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
     return render(request, "htmx/practice_digit_stimuli_2_response.html", {
+        "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,

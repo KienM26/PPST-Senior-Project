@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="{{ lang_info.code|default:'en' }}">
+<html lang="{{ lang|default:'en' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -42,7 +42,7 @@
 
         <form method="post" action="{% url 'htmx:saveVoice' %}">
             {% csrf_token %}
-
+            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
             <input type="hidden" name="voice" id="voiceInput" value="{{ selected_voice|default:'female' }}">
 
             <div class="voice-grid">
@@ -99,8 +99,8 @@ buttons.forEach(btn => {
 });
 
     function playAudio(baseName) {
-    const langValue = "{{ lang|default:'en' }}";
-    const lang = langValue === "es" ? "spanish" : "english";
+    const badgeText = document.querySelector(".lang-badge")?.innerText.toLowerCase() || "";
+    const lang = badgeText.includes("es") ? "spanish" : "english";
 
     const voice = localStorage.getItem("selectedVoice") || "female";
 

@@ -74,6 +74,7 @@
         </div>
 
         <form method="get" action="{% url 'htmx:practiceDigitStimuli1' %}" style="display:flex; justify-content:center;">
+            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
             <button type="submit" class="btn centered" id="nextBtn" disabled>
                 {{ text.intro_button|default:"Next" }}
             </button>
@@ -90,9 +91,9 @@
 </script>
 
     <script>
-function playAudio(baseName) {
-    const langValue = "{{ lang|default:'en' }}";
-    const lang = langValue === "es" ? "spanish" : "english";
+    function playAudio(baseName) {
+    const badgeText = document.querySelector(".lang-badge")?.innerText.toLowerCase() || "";
+    const lang = badgeText.includes("es") ? "spanish" : "english";
 
     const voice = localStorage.getItem("selectedVoice") || "female";
 
