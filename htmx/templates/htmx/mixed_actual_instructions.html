@@ -84,10 +84,13 @@
             {{ text.mixed_actual_instructions }}
         </p>
 
-        <form method="get" action="{% url 'htmx:mixedStimuli1' %}">
+        <form method="post" action="{% url 'htmx:startMixedTest' %}">
+            {% csrf_token %}
             <button type="submit" class="btn centered">{{ text.actual_test_button }}</button>
         </form>
     </main>
+
+    <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
 
 </body>
 </html>

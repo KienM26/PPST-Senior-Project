@@ -62,11 +62,13 @@
     <div class="gray-line"></div>
 
 <main class="completion-panel panel page-content" style="margin-top: 60px; padding: 60px 30px;">
-    <h2 class="completion-title prompt" style="margin-bottom: 50px;">{{ text.test_complete }}</h2>
+    <h2 class="completion-title prompt" style="margin-bottom: 50px;">{{ text.title }}</h2>
 
     <p class="completion-text instructions" style="margin-bottom: 60px;">
         {{ text.message }}
     </p>
+
+    <p class="completion-text instructions" id="submission-status" style="margin-bottom: 30px;"></p>
 
         <!-- Exit button -->
         <div class="centered">
@@ -74,13 +76,27 @@
         </div>
     </main>
 
+    <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
     <script>
+        async function submitStoredResponses() {
+            const status = document.getElementById("submission-status");
+
+            try {
+                await ppstTestBuffer.submitAll("{% url 'htmx:submitTestResponses' %}", "{{ csrf_token }}");
+                status.textContent = "";
+            } catch (error) {
+                status.textContent = "There was a problem saving the test responses.";
+            }
+        }
+
         function closeOrRedirect() {
             window.close(); // Try to close the tab
             setTimeout(() => {
                 window.location.href = "{% url 'htmx:home' %}"; // Fallback redirect if close is blocked
             }, 100);
         }
+
+        window.addEventListener("load", submitStoredResponses);
     </script>
 
 </body>

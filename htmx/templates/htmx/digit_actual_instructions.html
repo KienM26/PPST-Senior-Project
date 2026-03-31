@@ -84,10 +84,13 @@
             {{ text.digit_actual_instructions }}
         </p>
 
-        <form method="get" action="{% url 'htmx:digitStimuli1' %}">
-            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
-            <button type="submit" class="btn centered">{{ text.actual_test_button }}</button>
-        </form>
+
+   <form method="post" action="{% url 'htmx:startDigitTest' %}" onsubmit="if (window.ppstTestBuffer) ppstTestBuffer.clear()">
+    {% csrf_token %}
+    <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
+    <button type="submit" class="btn centered">{{ text.actual_test_button }}</button>
+    </form>
+
     </main>
 <script>
 function playAudio(baseName) {
@@ -109,5 +112,7 @@ function playAudio(baseName) {
     audio.play();
 }
 </script>
+    <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
+
 </body>
 </html>
