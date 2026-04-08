@@ -351,3 +351,229 @@ body.login-page .main-content {
     padding: 10px 24px;
     font-size: 1rem;
 }
+
+
+/* =========================
+   TEST RESULTS PAGE
+========================= */
+
+.results-page-shell {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 24px 40px 50px;
+}
+
+.results-page-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #4a3428;
+    margin-bottom: 6px;
+}
+
+.results-page-subtitle {
+    font-size: 1.35rem;
+    color: #5c4a40;
+    margin-bottom: 22px;
+}
+
+/* SECTION BOXES */
+.results-section {
+    background: #f4eeee;
+    border: 1px solid #a89a92;
+    border-radius: 4px;
+    padding: 18px 18px 20px;
+    margin-bottom: 24px;
+}
+
+.section-heading {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #4a3428;
+    text-decoration: underline;
+    margin-bottom: 16px;
+}
+
+/* TABLE */
+.results-table-wrapper {
+    overflow-x: auto;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f8f4f4;
+}
+
+.results-table th,
+.results-table td {
+    border: 1px solid #9f9792;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #222;
+}
+
+.results-table th {
+    background: #ece7e7;
+    font-weight: 700;
+}
+
+.id-pill {
+    display: inline-block;
+    background: #d8d3d3;
+    padding: 4px 14px;
+    border-radius: 3px;
+    font-weight: 600;
+    min-width: 56px;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    min-width: 95px;
+}
+
+.status-completed {
+    background: #77d887;
+    color: #18351d;
+}
+
+.status-in-progress {
+    background: #10a9b8;
+    color: white;
+}
+
+.status-not-started {
+    background: #d9d5d5;
+    color: #333;
+}
+
+.results-btn {
+    display: inline-block;
+    background: #ddd8d8;
+    color: #222;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #b8afaf;
+    transition: 0.2s ease;
+}
+
+.results-csv-btn {
+    display: inline-block;
+    background: #ddd8d8;
+    color: #222;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #b8afaf;
+    transition: 0.2s ease;
+    margin: 10px 0 30px;
+}
+
+.results-csv-btn:hover {
+    background: #d1cbcb;
+}
+
+
+.results-btn:hover {
+    background: #d1cbcb;
+}
+
+
+
+/* EMPTY STATE */
+.empty-row {
+    background: #faf8f8;
+    color: #666;
+}
+
+/* SUMMARY */
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f8f4f4;
+}
+
+.summary-table td {
+    border: 1px solid #9f9792;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+}
+
+.summary-label {
+    width: 70%;
+    color: #4d4d4d;
+}
+
+.summary-value {
+    text-align: center;
+    font-weight: 500;
+    color: #555;
+}
+
+/* ANALYTICS */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.chart-box {
+    background: #f8f4f4;
+    border: 1px solid #a89a92;
+    border-radius: 4px;
+    padding: 10px 12px 14px;
+    min-height: 250px;
+}
+
+.chart-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #4a3428;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.chart-box canvas {
+    width: 100% !important;
+    height: 185px !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 950px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .results-page-title {
+        font-size: 1.8rem;
+    }
+
+    .results-page-subtitle {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 700px) {
+    .results-page-shell {
+        padding: 18px 16px 40px;
+    }
+
+    .results-table th,
+    .results-table td {
+        font-size: 0.85rem;
+        padding: 8px;
+    }
+}
+
+/* =========================
+   END OF TEST RESULTS PAGE

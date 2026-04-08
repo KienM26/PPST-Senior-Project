@@ -1,12 +1,18 @@
+import csv
 import random
 import json
 
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
+from django.db.models import Avg
+
 from database.models import Latency, Response, Results, Stimulus, Test
+
+from datetime import date
+import json
 
 
 DIGIT_STIMULI_DATA = [
@@ -1153,3 +1159,295 @@ def submit_test_responses(request):
         request.session.pop(key, None)
 
     return JsonResponse({"ok": True})
+
+def doctor_test_results(request):
+    # Use all tests if user is anonymous
+    if request.user.is_authenticated:
+        tests = Test.objects.filter(doctor=request.user).select_related('results')
+    else:
+        tests = Test.objects.all().select_related('results')
+
+    completed_tests = tests.filter(status='completed', results__isnull=False)
+
+    # ----------------------------
+    # SUMMARY
+    # ----------------------------
+    completed_tests_count = completed_tests.count()
+
+    avg_completion_time = completed_tests.aggregate(
+        avg_time=Avg('results__total_time')
+    )['avg_time']
+
+    avg_response_time = completed_tests.aggregate(
+        avg_time=Avg('results__response_time')
+    )['avg_time']
+
+    # ----------------------------
+    # AGE GROUP CHART
+    # ----------------------------
+    age_groups = {
+        "0-20": 0,
+        "21-40": 0,
+        "41-60": 0,
+        "60+": 0
+    }
+
+    for test in completed_tests:
+        age = test.test_taker_age
+
+        if age <= 20:
+            age_groups["0-20"] += 1
+        elif age <= 40:
+            age_groups["21-40"] += 1
+        elif age <= 60:
+            age_groups["41-60"] += 1
+        else:
+            age_groups["60+"] += 1
+
+    age_chart_labels = list(age_groups.keys())
+    age_chart_data = list(age_groups.values())
+
+    # ----------------------------
+    # ACCURACY OVER TESTS
+    # ----------------------------
+    accuracy_chart_labels = []
+    accuracy_chart_data = []
+
+    for test in completed_tests.order_by('id'):
+        try:
+            result = test.results
+            accuracy_chart_labels.append(f"Test {test.id}")
+            accuracy_chart_data.append(round(result.accuracy, 2))
+        except:
+            pass
+
+    # ----------------------------
+    # COMPLETION TIME CHART
+    # Store chart values in SECONDS instead of ms
+    # ----------------------------
+    completion_chart_labels = []
+    completion_chart_data = []
+
+    for test in completed_tests.order_by('id'):
+        try:
+            result = test.results
+            completion_chart_labels.append(f"Test {test.id}")
+            completion_chart_data.append(round(result.total_time / 1000, 2))
+        except:
+            pass
+
+    # ----------------------------
+    # DISPLAY FRIENDLY TABLE VALUES
+    # ----------------------------
+    for test in tests:
+        try:
+            test.formatted_total_time = format_ms(test.results.total_time)
+        except:
+            test.formatted_total_time = "--"
+
+    context = {
+        "tests": tests,
+        "completed_tests_count": completed_tests_count,
+
+        # raw values if ever needed
+        "avg_completion_time": round(avg_completion_time, 2) if avg_completion_time else "--",
+        "avg_response_time": round(avg_response_time, 2) if avg_response_time else "--",
+
+        # display values
+        "avg_completion_time_display": format_ms(avg_completion_time) if avg_completion_time else "--",
+        "avg_response_time_display": format_ms(avg_response_time) if avg_response_time else "--",
+
+        "age_chart_labels": json.dumps(age_chart_labels),
+        "age_chart_data": json.dumps(age_chart_data),
+
+        "accuracy_chart_labels": json.dumps(accuracy_chart_labels),
+        "accuracy_chart_data": json.dumps(accuracy_chart_data),
+
+        "completion_chart_labels": json.dumps(completion_chart_labels),
+        "completion_chart_data": json.dumps(completion_chart_data),
+    }
+
+    return render(request, "htmx/doctorportal/doctor_test_results.html", context)
+
+def get_age_group(age):
+    """Map a test taker’s age to a readable age group."""
+    if 12 <= age <= 17:
+        return "12-17"
+    elif 18 <= age <= 25:
+        return "18-25"
+    elif 26 <= age <= 40:
+        return "26-40"
+    elif 41 <= age <= 60:
+        return "41-60"
+    else:
+        return "60+"
+    
+def format_ms(ms):
+    """Convert milliseconds to a readable time string."""
+    if ms is None:
+        return "--"
+
+    total_seconds = int(round(ms / 1000))
+
+    minutes = total_seconds // 60
+    seconds = total_seconds % 60
+
+    if minutes > 0:
+        return f"{minutes} min {seconds} sec"
+    return f"{seconds} sec"
+
+
+def doctor_test_result(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+
+    # Fetch the related Results object safely
+    result = getattr(test, 'results', None)
+
+    # Compute age group
+    age_group_label = get_age_group(test.test_taker_age)
+
+    # Handle "60+" safely
+    if "+" in age_group_label:
+        age_min = int(age_group_label.replace("+", ""))
+        age_group_tests = Test.objects.filter(
+            test_taker_age__gte=age_min,
+            status='completed'
+        )
+    else:
+        age_min, age_max = map(int, age_group_label.split('-'))
+        age_group_tests = Test.objects.filter(
+            test_taker_age__gte=age_min,
+            test_taker_age__lte=age_max,
+            status='completed'
+        )
+
+    # Pull completed results only
+    completed_results = [t.results for t in age_group_tests if hasattr(t, 'results')]
+
+    if completed_results:
+        avg_accuracy = round(sum(r.accuracy for r in completed_results) / len(completed_results), 1)
+        avg_completion = round(sum(r.total_time for r in completed_results) / len(completed_results), 1)
+        avg_response = round(sum(r.response_time for r in completed_results) / len(completed_results), 1)
+        avg_correct = round(sum(r.num_of_correct for r in completed_results) / len(completed_results), 1)
+        avg_incorrect = round(sum(r.num_of_incorrect for r in completed_results) / len(completed_results), 1)
+    else:
+        avg_accuracy = "--"
+        avg_completion = None
+        avg_response = None
+        avg_correct = "--"
+        avg_incorrect = "--"
+
+    context = {
+        "test": test,
+        "result": result,
+        "age_group_label": age_group_label,
+
+        "avg_accuracy": avg_accuracy,
+        "avg_completion": avg_completion,
+        "avg_response": avg_response,
+        "avg_correct": avg_correct,
+        "avg_incorrect": avg_incorrect,
+
+        # Display-friendly formatted values
+        "patient_completion_display": format_ms(result.total_time) if result else "--",
+        "avg_completion_display": format_ms(avg_completion) if avg_completion is not None else "--",
+
+        "patient_response_display": format_ms(result.response_time) if result else "--",
+        "avg_response_display": format_ms(avg_response) if avg_response is not None else "--",
+    }
+
+    return render(request, "htmx/doctorportal/doctor_test_result.html", context)
+
+def doctor_test_result_csv(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    result = getattr(test, "results", None)  # link to Results
+
+    # Determine age group dynamically
+    def get_age_group(age):
+        if 12 <= age <= 17:
+            return "12-17", 12, 17
+        elif 18 <= age <= 25:
+            return "18-25", 18, 25
+        elif 26 <= age <= 40:
+            return "26-40", 26, 40
+        elif 41 <= age <= 60:
+            return "41-60", 41, 60
+        else:
+            return "60+", 61, 200
+
+    age_label, age_min, age_max = get_age_group(test.test_taker_age)
+
+    # Filter completed tests in the same age group
+    age_group_tests = Test.objects.filter(
+        test_taker_age__gte=age_min,
+        test_taker_age__lte=age_max,
+        status='completed'
+    )
+    completed_results = [t.results for t in age_group_tests if hasattr(t, 'results')]
+
+    if completed_results:
+        avg_accuracy = round(sum(r.accuracy for r in completed_results) / len(completed_results), 1)
+        avg_completion = round(sum(r.total_time for r in completed_results) / len(completed_results), 1)
+    else:
+        avg_accuracy = "--"
+        avg_completion = "--"
+
+    # Prepare CSV response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="test_{test.id}_results.csv"'
+    writer = csv.writer(response)
+
+    # --- Summary Section ---
+    writer.writerow(['Summary', 'Patient', f'Average for Age {age_label}'])
+    writer.writerow(['Accuracy', result.accuracy if result else "--", avg_accuracy])
+    writer.writerow(['Completion Time', result.total_time if result else "--", avg_completion])
+    writer.writerow(['Avg Response', result.response_time if result else "--", "--"])
+    writer.writerow(['Correct', result.num_of_correct if result else "--", "--"])
+    writer.writerow(['Incorrect', result.num_of_incorrect if result else "--", "--"])
+    writer.writerow(['Age', test.test_taker_age, age_label])
+    writer.writerow([])
+
+    # --- Detailed Responses Section ---
+    writer.writerow(['Stimulus', 'Type', 'Span Length', 'Correct Answer', 'Patient Response', 'Correct?', 'Latency per Input (ms)'])
+    responses = Response.objects.filter(test=test)
+    for resp in responses:
+        latencies = Latency.objects.filter(response=resp).order_by('input_order')
+        latency_str = ", ".join(str(l.time) for l in latencies)
+        writer.writerow([
+            resp.stimulus.stimulus_string,
+            resp.stimulus.stimulus_type,
+            resp.stimulus.span_length,
+            resp.stimulus.correct_answer,
+            resp.response_string,
+            "Yes" if resp.is_correct else "No",
+            latency_str
+        ])
+    writer.writerow([])
+
+    # --- Aggregate Stats by Stimulus Type ---
+    stimulus_types = responses.values_list('stimulus__stimulus_type', flat=True).distinct()
+    writer.writerow(['Aggregate by Stimulus Type', 'Average Accuracy', 'Average Completion Time (ms)', 'Average Response Time (ms)'])
+    for stype in stimulus_types:
+        type_responses = [r for r in responses if r.stimulus.stimulus_type == stype]
+        if type_responses:
+            type_results = [r for r in type_responses if hasattr(r.test, 'results')]
+            if type_results:
+                avg_acc = round(sum(r.test.results.accuracy for r in type_results)/len(type_results), 1)
+                avg_comp = round(sum(r.test.results.total_time for r in type_results)/len(type_results), 1)
+                avg_resp = round(sum(r.test.results.response_time for r in type_results)/len(type_results), 1)
+            else:
+                avg_acc = avg_comp = avg_resp = "--"
+            writer.writerow([stype, avg_acc, avg_comp, avg_resp])
+    writer.writerow([])
+
+    # --- Stats by Span Length ---
+    span_lengths = responses.values_list('stimulus__span_length', flat=True).distinct()
+    writer.writerow(['Aggregate by Span Length', 'Average Correct', 'Average Incorrect'])
+    for span in span_lengths:
+        span_responses = [r for r in responses if r.stimulus.span_length == span]
+        if span_responses:
+            avg_correct = round(sum(r.is_correct for r in span_responses)/len(span_responses) * span, 1)
+            avg_incorrect = span - avg_correct
+            writer.writerow([span, avg_correct, avg_incorrect])
+
+    return response

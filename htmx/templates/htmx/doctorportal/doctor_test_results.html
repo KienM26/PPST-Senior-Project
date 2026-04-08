@@ -1,61 +1,266 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Results</title>
-
     <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
 </head>
 
 <body class="page">
 
-    <!-- NAVBAR (FULL WIDTH) -->
-    <header class="navbar">
+    <!-- NAVBAR -->
+    <nav class="navbar">
         <div class="nav-left">
             <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
         </div>
-
-        <nav class="nav-right">
+        <div class="nav-right">
             <a href="{% url 'htmx:doctor_dashboard' %}">Dashboard</a>
             <a href="{% url 'htmx:doctor_create_test' %}">Create Test</a>
-            <a href="{% url 'htmx:doctor_test_results' %}" class="nav-active">Results</a>
+            <a href="#" class="nav-active">Results</a>
             <a href="{% url 'htmx:doctor_settings' %}">Settings</a>
             <a href="{% url 'htmx:doctor_support' %}">Support</a>
-            <a href="{% url 'htmx:doctor_logout' %}">Logout</a>
-        </nav>
-    </header>
+            <a href="{% url 'htmx:doctor_logout' %}">Log Out</a>
+        </div>
+    </nav>
 
-
-    <!-- MAIN CONTENT -->
     <main class="main-content">
+        <div class="results-page-shell">
 
-        <!-- HERO -->
-        <section class="hero">
-            <div class="hero-text">
-                <h1>The Philadelphia <br> Pointing Span Test</h1>
-            </div>
+            <!-- PAGE TITLE -->
+            <h1 class="results-page-title">Test Results</h1>
+            <p class="results-page-subtitle">View Test Results For Your Patients</p>
 
-            <div class="hero-image">
-                <img src="https://via.placeholder.com/400x250">
-            </div>
-        </section>
+            <!-- TEST RESULTS -->
+            <section class="results-section">
+                <h2 class="section-heading">Test Results</h2>
 
-        <!-- IMAGES -->
-        <section class="image-row">
-            <div class="image-card small">
-                <img src="https://via.placeholder.com/300x200">
-            </div>
+                <div class="results-table-wrapper">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Test ID</th>
+                                <th>Status</th>
+                                <th>Amount of Time</th>
+                                <th>Expiration Date</th>
+                                <th>Results</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in tests %}
+                            <tr>
+                                <td>
+                                    <span class="id-pill">{{ test.id }}</span>
+                                </td>
+                                <td>
+                                    {% if test.status == 'completed' %}
+                                        <span class="status-pill status-completed">{{ test.get_status_display }}</span>
+                                    {% elif test.status == 'active' %}
+                                        <span class="status-pill status-in-progress">In Progress</span>
+                                    {% else %}
+                                        <span class="status-pill status-not-started">Not Started</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ test.formatted_total_time }}</td>
+                                <td>
+                                    {% if test.expiration_date %}
+                                        {{ test.expiration_date|date:"n/j/Y" }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.status == 'completed' %}
+                                        <a class="results-btn" href="{% url 'htmx:doctor_test_result' test.id %}">
+                                            View Results
+                                        </a>
+                                    {% else %}
+                                        <span class="results-btn disabled-btn">View Results</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="empty-row">
+                                <td colspan="5">No tests available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-            <div class="image-card large">
-                <img src="https://via.placeholder.com/600x200">
-            </div>
-        </section>
+            <!-- SUMMARY -->
+            <section class="results-section">
+                <h2 class="section-heading">Summary</h2>
 
+                <table class="summary-table">
+                    <tr>
+                        <td class="summary-label">Completed Tests</td>
+                        <td class="summary-value">{{ completed_tests_count|default:"0" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">Average Completion Time</td>
+                        <td class="summary-value">{{ avg_completion_time_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">Average Response Time</td>
+                        <td class="summary-value">{{ avg_response_time_display }}</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- VISUAL ANALYTICS -->
+            <section class="results-section">
+                <h2 class="section-heading">Visual Analytics</h2>
+
+                <div class="analytics-grid">
+                    <div class="chart-box">
+                        <h3 class="chart-title">Success Performance Statistics By Age Group</h3>
+                        <canvas id="ageChart"></canvas>
+                    </div>
+
+                    <div class="chart-box">
+                        <h3 class="chart-title">Accuracy Over Tests</h3>
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+
+                    <div class="chart-box">
+                        <h3 class="chart-title">Completion Time Distribution</h3>
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+        </div>
     </main>
 
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ageChartLabels = {{ age_chart_labels|safe }};
+        const ageChartData = {{ age_chart_data|safe }};
 
+        const accuracyChartLabels = {{ accuracy_chart_labels|safe }};
+        const accuracyChartData = {{ accuracy_chart_data|safe }};
+
+        const completionChartLabels = {{ completion_chart_labels|safe }};
+        const completionChartData = {{ completion_chart_data|safe }};
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        font: { size: 10 }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: { size: 10 }
+                    }
+                }
+            }
+        };
+
+        // AGE GROUP PIE CHART
+        new Chart(document.getElementById('ageChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: ageChartLabels.length ? ageChartLabels : ['No Data'],
+                datasets: [{
+                    data: ageChartData.length ? ageChartData : [1],
+                    backgroundColor: [
+                        '#355c7d',
+                        '#1f7ea5',
+                        '#4bb7d8',
+                        '#7ed6e8',
+                        '#8e5ea2'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // ACCURACY LINE CHART
+        new Chart(document.getElementById('accuracyChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: accuracyChartLabels,
+                datasets: [{
+                    label: 'Accuracy %',
+                    data: accuracyChartData,
+                    borderColor: '#66c7e3',
+                    backgroundColor: '#66c7e3',
+                    tension: 0.3,
+                    fill: false
+                }]
+            },
+            options: chartOptions
+        });
+
+        // COMPLETION TIME BAR CHART
+        new Chart(document.getElementById('completionChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: completionChartLabels,
+                datasets: [{
+                    label: 'Completion Time (seconds)',
+                    data: completionChartData,
+                    backgroundColor: '#73d7df'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: { size: 11 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: 10 }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Seconds'
+                        },
+                        ticks: {
+                            font: { size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
 </html>
