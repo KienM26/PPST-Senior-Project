@@ -34,16 +34,24 @@
             <!-- LEFT COLUMN: Login -->
             <div class="login-left">
                 <h1>Welcome Back</h1>
+                {% if error %}
+                    <div class="error-message">
+                        {{ error }}
+                    </div>
+                {% endif %}
                 <p class="subtitle">
                     Need a PPST account? <a href="{% url 'htmx:doctor_create_account' %}">Create account</a>
                 </p>
-
-                <form method="post" action="#" class="login-form">
+                
+                <form method="post" action="{% url 'htmx:doctor_login' %}" class="login-form">
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="username">Email or Username</label>
-                        <input type="text" id="username" name="username" placeholder="Enter your username">
-                    </div>
+                        <input type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Enter your username"
+                            value="{{ request.POST.username|default:''  }}">                    </div>
                     <div class="form-group">
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" placeholder="Enter your password">

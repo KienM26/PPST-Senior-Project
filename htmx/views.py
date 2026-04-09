@@ -5,7 +5,7 @@ import json
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from django.db.models import Avg
 
@@ -14,6 +14,14 @@ from database.models import Latency, Response, Results, Stimulus, Test
 from datetime import date
 import json
 
+from django.contrib.auth import authenticate, login, logout
+from database.models import Doctor
+from django.contrib.auth.decorators import login_required
+
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+import re
 
 DIGIT_STIMULI_DATA = [
     {"key": "digit_stimuli_1", "sequence": "37K2M", "correct_answer": "237"},
@@ -284,9 +292,10 @@ def get_current_theme(request):
 
 def initialize_test_session(request, stimuli_data, stimulus_type):
     test = Test.objects.create(
-        status="active",
-        test_taker_age=12,
-        is_independent=True,
+    doctor=request.user if request.user.is_authenticated else None,
+    status="active",
+    test_taker_age=12,
+    is_independent=True,
     )
 
     stimulus_ids = {}
@@ -360,6 +369,7 @@ def start_digit_test(request):
     ]
 
     test = Test.objects.create(
+        doctor=request.user if request.user.is_authenticated else None,
         status="active",
         test_taker_age=12,
         is_independent=True,
@@ -532,39 +542,144 @@ def home(request):
 def doctor_portal(request):
     return render(request, 'htmx/doctorportal/doctor_portal.html', {})
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 def doctor_login(request):
-    return render(request, 'htmx/doctorportal/doctor_login.html', {})
+    
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
-@require_GET
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            if not user.is_approved:
+                return render(request, 'htmx/doctorportal/doctor_login.html', {
+                    "error": "Account not approved yet"
+                })
+
+            login(request, user)
+            return redirect("htmx:doctor_dashboard")
+
+        return render(request, 'htmx/doctorportal/doctor_login.html', {
+            "error": "Invalid username or password"
+        })
+
+    return render(request, 'htmx/doctorportal/doctor_login.html')
+
 def doctor_create_account(request):
-    return render(request, 'htmx/doctorportal/doctor_create_account.html', {})
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        middle_name = request.POST.get("middle_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        password_confirm = request.POST.get("password_confirm")
+        hospital = request.POST.get("hospital")
+        practice = request.POST.get("practice")
+        license_number = request.POST.get("license")
 
+        errors = []
+        if not first_name or not last_name:
+            errors.append("First and last name are required.")
+
+        if not email:
+            errors.append("Email is required.")
+        else:
+            try:
+                validate_email(email)
+            except:
+                errors.append("Enter a valid email address.")
+
+        if not username:
+            errors.append("Username is required.")
+
+        if not password:
+            errors.append("Password is required.")
+
+        if password != password_confirm:
+            errors.append("Passwords do not match.")
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            errors.extend(e.messages)
+        #----
+        if not re.search(r"[A-Z]", password or ""):
+            errors.append("Password must include at least one uppercase letter.")
+
+        if not re.search(r"[a-z]", password or ""):
+            errors.append("Password must include at least one lowercase letter.")
+
+        if not re.search(r"[0-9]", password or ""):
+            errors.append("Password must include at least one number.")
+
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password or ""):
+            errors.append("Password must include at least one special character.")
+        #----
+        if Doctor.objects.filter(username=username).exists():
+            errors.append("Username already exists.")
+
+        if Doctor.objects.filter(medical_license_number=license_number).exists():
+            errors.append("License already registered.")
+        if errors:
+            return render(request, 'htmx/doctorportal/doctor_create_account.html', {
+                "errors": errors,
+                "form_data": request.POST
+            })
+        user = Doctor.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            middle_initial=middle_name[:1] if middle_name else "",
+            organization_name=hospital,
+            office_name=practice,
+            medical_license_number=license_number,
+            is_approved=True
+        )
+
+        login(request, user)
+        return redirect("htmx:doctor_dashboard")
+
+    return render(request, 'htmx/doctorportal/doctor_create_account.html')
+
+@login_required
 @require_GET
 def doctor_dashboard(request):
-    return render(request, 'htmx/doctorportal/doctor_dashboard.html', {})
+    return render(request, 'htmx/doctorportal/doctor_dashboard.html', {
+        "user": request.user
+    })
 
+@login_required
 @require_GET
 def doctor_create_test(request):
-    return render(request, 'htmx/doctorportal/doctor_create_test.html', {})
-
+    return render(request, 'htmx/doctorportal/doctor_create_test.html', {
+        "user": request.user
+    })
+@login_required
 @require_GET
 def doctor_test_results(request):
-    return render(request, 'htmx/doctorportal/doctor_test_results.html', {})
-
+    return render(request, 'htmx/doctorportal/doctor_test_results.html', {
+        "user": request.user
+    })
+@login_required
 @require_GET
 def doctor_test_result(request, test_id):
     return render(request, 'htmx/doctorportal/doctor_test_result.html', {'test_id': test_id})
-
+@login_required
 @require_GET
 def doctor_settings(request):
-    return render(request, 'htmx/doctorportal/doctor_settings.html', {})
+    return render(request, 'htmx/doctorportal/doctor_settings.html', {
+        "user": request.user
+    })
 
 @require_GET
 def doctor_support(request):
     return render(request, 'htmx/doctorportal/doctor_support.html', {})
 
 def doctor_logout(request):
+    logout(request)
     return redirect('htmx:doctor_login')
 
 @require_GET
