@@ -28,7 +28,7 @@
 
         <h1 class="title">{{ text.title_response }} 4</h1>
 
-        <div class="speaker-wrap">
+        <div class="speaker-wrap" onclick="playAudio('Digit_Response_4')" style="cursor:pointer;">
             <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
         </div>
 
@@ -48,6 +48,7 @@
 
         <form method="get" action="{% url 'htmx:digitStimuli5' %}" onsubmit="saveAndContinue()">
             <input type="hidden" name="response" id="response">
+            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
 
             <div class="keypad">
 
@@ -75,16 +76,81 @@
 
     <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
     <script>
-        ppstTestBuffer.startCapture();
+         let answer = [];
 
-        function press(num) {
-            ppstTestBuffer.press(num);
-        }
+    ppstTestBuffer.startCapture();
 
-        function saveAndContinue() {
-            ppstTestBuffer.saveCurrentResponse("digit_stimuli_4", "digit");
-        }
+    function speakDigit(num) {
+        const langValue = "{{ lang|default:'en' }}";
+        const isSpanish = langValue === "es";
+
+        const digitNamesEn = {
+            1: "one",
+            2: "two",
+            3: "three",
+            4: "four",
+            5: "five",
+            6: "six",
+            7: "seven",
+            8: "eight",
+            9: "nine"
+        };
+
+        const digitNamesEs = {
+            1: "uno",
+            2: "dos",
+            3: "tres",
+            4: "cuatro",
+            5: "cinco",
+            6: "seis",
+            7: "siete",
+            8: "ocho",
+            9: "nueve"
+        };
+
+        const textToSpeak = isSpanish ? digitNamesEs[num] : digitNamesEn[num];
+
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = isSpanish ? "es-ES" : "en-US";
+        utterance.rate = 0.9;
+
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utterance);
+    }
+
+    function press(num) {
+        answer.push(num);
+        document.getElementById("response").value = answer.join("");
+
+        ppstTestBuffer.press(num);
+        speakDigit(num);
+    }
+
+    function saveAndContinue() {
+        ppstTestBuffer.saveCurrentResponse("digit_stimuli_4", "digit");
+    }
     </script>
+
+    <script>
+    function playAudio(baseName) {
+    const langValue = "{{ lang|default:'en' }}";
+    const lang = langValue === "es" ? "spanish" : "english";
+
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (lang === "english" && voice === "female") fileName = baseName + ".mp3";
+    if (lang === "english" && voice === "male") fileName = baseName + "1.mp3";
+    if (lang === "spanish" && voice === "female") fileName = baseName + "2.mp3";
+    if (lang === "spanish" && voice === "male") fileName = baseName + "3.mp3";
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
+</script>
 
 </body>
 

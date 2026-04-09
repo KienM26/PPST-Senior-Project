@@ -78,12 +78,51 @@
     </main>
 
     <script>
-        let answer = [];
+    let answer = [];
 
-        function press(num) {
-            answer.push(num);
-            document.getElementById("response").value = answer.join("");
-        }
+    function speakDigit(num) {
+        const langValue = "{{ lang|default:'en' }}";
+        const isSpanish = langValue === "es";
+
+        const digitNamesEn = {
+            1: "one",
+            2: "two",
+            3: "three",
+            4: "four",
+            5: "five",
+            6: "six",
+            7: "seven",
+            8: "eight",
+            9: "nine"
+        };
+
+        const digitNamesEs = {
+            1: "uno",
+            2: "dos",
+            3: "tres",
+            4: "cuatro",
+            5: "cinco",
+            6: "seis",
+            7: "siete",
+            8: "ocho",
+            9: "nueve"
+        };
+
+        const textToSpeak = isSpanish ? digitNamesEs[num] : digitNamesEn[num];
+
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = isSpanish ? "es-ES" : "en-US";
+        utterance.rate = 0.9;
+
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utterance);
+    }
+
+    function press(num) {
+        answer.push(num);
+        document.getElementById("response").value = answer.join("");
+        speakDigit(num);
+    }
     </script>
 
     <script>

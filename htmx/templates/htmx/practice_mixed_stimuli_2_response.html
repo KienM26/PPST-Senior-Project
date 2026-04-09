@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{{ text.title_mixed_response }} 2</title>
+    <title>{{ text.title_response }} 2</title>
 
     <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
 
@@ -29,7 +29,7 @@
 
         <h1 class="title">{{ text.title_response }} 2</h1>
 
-        <div class="speaker-wrap">
+        <div class="speaker-wrap" onclick="playAudio('Practice_Mixed_Response_2')" style="cursor:pointer;">
             <img src="{% static 'htmx/images/speaker.png' %}">
         </div>
 
@@ -52,6 +52,7 @@
             {% csrf_token %}
 
             <input type="hidden" name="response" id="response">
+            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
 
         <div class="keypad-container">
             <div class="keypad">
@@ -98,11 +99,89 @@
     <script>
         let answer = [];
 
-        function press(num) {
-            answer.push(num);
-            document.getElementById("response").value = answer.join("");
-        }
+        function speakInput(value) {
+        const langValue = "{{ lang|default:'en' }}";
+        const isSpanish = langValue === "es";
+
+        const namesEn = {
+            1: "one",
+            2: "two",
+            3: "three",
+            4: "four",
+            5: "five",
+            6: "six",
+            7: "seven",
+            8: "eight",
+            9: "nine",
+            A: "a",
+            B: "b",
+            C: "c",
+            D: "d",
+            E: "e",
+            F: "f",
+            G: "g",
+            H: "h",
+            I: "i"
+        };
+
+        const namesEs = {
+            1: "uno",
+            2: "dos",
+            3: "tres",
+            4: "cuatro",
+            5: "cinco",
+            6: "seis",
+            7: "siete",
+            8: "ocho",
+            9: "nueve",
+            A: "a",
+            B: "b",
+            C: "c",
+            D: "d",
+            E: "e",
+            F: "f",
+            G: "g",
+            H: "h",
+            I: "i"
+        };
+
+        const textToSpeak = isSpanish ? namesEs[value] : namesEn[value];
+
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = isSpanish ? "es-ES" : "en-US";
+        utterance.rate = 0.9;
+
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utterance);
+    }
+
+    function press(value) {
+        answer.push(value);
+        document.getElementById("response").value = answer.join("");
+        speakInput(value);
+    }
     </script>
+
+    <script>
+    function playAudio(baseName) {
+    const langValue = "{{ lang|default:'en' }}";
+    const lang = langValue === "es" ? "spanish" : "english";
+
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (lang === "english" && voice === "female") fileName = baseName + ".mp3";
+    if (lang === "english" && voice === "male") fileName = baseName + "1.mp3";
+    if (lang === "spanish" && voice === "female") fileName = baseName + "2.mp3";
+    if (lang === "spanish" && voice === "male") fileName = baseName + "3.mp3";
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
+</script>
 
 </body>
 

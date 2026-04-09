@@ -63,7 +63,7 @@
 
     <h1 class="title">{{ text.title }} 1</h1>
 
-    <div class="speaker-wrap">
+    <div class="speaker-wrap" onclick="playAudio('Digit_Stimuli_1_Display')" style="cursor:pointer;">
         <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
     </div>
 
@@ -88,13 +88,33 @@
         if (index < sequence.length) {
             box.textContent = sequence[index];
             index++;
-            setTimeout(showNext, 2000);
+            setTimeout(showNext, 1800);
         } else {
-            window.location.href = "{% url 'htmx:digitStimuli1Response' %}";
+            window.location.href = "{% url 'htmx:digitStimuli1Response' %}?lang={{ lang|default:'en' }}";
         }
     }
 
     window.onload = () => setTimeout(showNext, 500);
+</script>
+<script>
+function playAudio(baseName) {
+    const langValue = "{{ lang|default:'en' }}";
+    const lang = langValue === "es" ? "spanish" : "english";
+
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (lang === "english" && voice === "female") fileName = baseName + ".mp3";
+    if (lang === "english" && voice === "male") fileName = baseName + "1.mp3";
+    if (lang === "spanish" && voice === "female") fileName = baseName + "2.mp3";
+    if (lang === "spanish" && voice === "male") fileName = baseName + "3.mp3";
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
 </script>
 
 </body>
