@@ -236,6 +236,25 @@ body.login-page .main-content {
     border-radius: 8px;
 }
 
+.error-message {
+    background-color: #ffe6e6;   
+    color: #cc0000;              
+    border: 1px solid #cc0000;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+}
+
+.error-message ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.error-message li {
+    margin-bottom: 5px;
+}
+
+
 /* CREATE TEST PAGE */
 .create-test-layout {
     display: grid;

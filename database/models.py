@@ -7,7 +7,7 @@ class Doctor(AbstractUser):
     organization_name = models.CharField(max_length=200)
     office_name = models.CharField(max_length=200)
     medical_license_number = models.CharField(max_length=100, unique=True)
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=True)
    
     def approve(self):
         self.is_approved = True
