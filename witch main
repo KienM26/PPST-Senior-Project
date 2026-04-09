@@ -1,9 +1,0 @@
-* [32mAccessibility_Initi                                            [m fde90a9 Merge pull request #4 from KienM26/implement-selectLanguagePageAndAccessibilityPage
-  main                                                           [m dab8c85 [ahead 1, behind 2] Created CSS file
-  [31mremotes/origin/HEAD                                            [m -> origin/main
-  [31mremotes/origin/implement-AccessibilityPagesAndCleanUp          [m f18b9d9 will remove useless methods and classes later but LGTM
-  [31mremotes/origin/implement-newStruct                             [m eaa1d3d we did a lot of changes plz work
-  [31mremotes/origin/implement-pages                                 [m c67161f will be working later...
-  [31mremotes/origin/implement-selectLanguagePageAndAccessibilityPage[m b9369b7 Impleted todo pages, working on have the pages to showup atleast will have to remove all the other useless demo pages eventually
-  [31mremotes/origin/main                                            [m 1bdb76a Merge pull request #5 from KienM26/implement-AccessibilityPagesAndCleanUp
-  [31mremotes/origin/update-settingUpProject                         [m 65e0963 updated git repo with template for django from professor
