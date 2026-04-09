@@ -647,15 +647,22 @@ def doctor_create_account(request):
 @login_required
 @require_GET
 def doctor_dashboard(request):
-    return render(request, 'htmx/doctorportal/doctor_dashboard.html', {})
+    return render(request, 'htmx/doctorportal/doctor_dashboard.html', {
+        "user": request.user
+    })
+
 @login_required
 @require_GET
 def doctor_create_test(request):
-    return render(request, 'htmx/doctorportal/doctor_create_test.html', {})
+    return render(request, 'htmx/doctorportal/doctor_create_test.html', {
+        "user": request.user
+    })
 @login_required
 @require_GET
 def doctor_test_results(request):
-    return render(request, 'htmx/doctorportal/doctor_test_results.html', {})
+    return render(request, 'htmx/doctorportal/doctor_test_results.html', {
+        "user": request.user
+    })
 @login_required
 @require_GET
 def doctor_test_result(request, test_id):
@@ -663,7 +670,9 @@ def doctor_test_result(request, test_id):
 @login_required
 @require_GET
 def doctor_settings(request):
-    return render(request, 'htmx/doctorportal/doctor_settings.html', {})
+    return render(request, 'htmx/doctorportal/doctor_settings.html', {
+        "user": request.user
+    })
 
 @require_GET
 def doctor_support(request):

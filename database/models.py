@@ -16,8 +16,12 @@ class Doctor(AbstractUser):
 
     @property
     def full_name(self):
-        return f"{self.first_name} {self.middle_initial} {self.last_name}".strip()
-
+        parts = [
+            self.first_name.title() if self.first_name else "",
+            self.middle_initial.upper() if self.middle_initial else "",
+            self.last_name.title() if self.last_name else "",
+        ]
+        return " ".join(filter(None, parts))
 
 
 

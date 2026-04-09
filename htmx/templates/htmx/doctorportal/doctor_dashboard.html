@@ -36,7 +36,7 @@
         <section class="hero">
             <div class="hero-text">
                 <h1>Dashboard</h1>
-                <h2>Welcome Back, Dr. _____</h2>
+                <h2>Welcome Back, Dr. {{ request.user.last_name|title }}</h2>
             </div>
         </section>
 
