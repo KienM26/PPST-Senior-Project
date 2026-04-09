@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPST Home</title>
+
+    <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
+</head>
+
+<body class="page">
+
+    <!-- NAVBAR (FULL WIDTH) -->
+    <header class="navbar">
+        <div class="nav-left">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
+        </div>
+
+        <nav class="nav-right">
+            <a href="{% url 'htmx:doctor_dashboard' %}" class="nav-active">Dashboard</a>
+            <a href="{% url 'htmx:doctor_create_test' %}">Create Test</a>
+            <a href="{% url 'htmx:doctor_test_results' %}">Results</a>
+            <a href="{% url 'htmx:doctor_settings' %}">Settings</a>
+            <a href="{% url 'htmx:doctor_support' %}">Support</a>
+            <a href="{% url 'htmx:doctor_logout' %}">Logout</a>
+        </nav>
+    </header>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-text">
+                <h1>Dashboard</h1>
+                <h2>Welcome Back, Dr. {{ request.user.last_name|title }}</h2>
+            </div>
+        </section>
+
+        <article class="portal-card">
+            <h2>Tests Completed Since Last Login</h2>
+            <ul class="created-tests-list">
+                <li>X test completed since XX/XX/XXXX at XX:XX am/pm</li>
+            </ul>
+        </article>
+
+        <article class="portal-card">
+            <h2>Tests in Progress</h2>
+            <ul class="created-tests-list">
+                <li>X test(s) in progress, Started but not completed</li>
+            </ul>
+        </article>
+
+        <article class="portal-card">
+            <h2>New Test Results Available</h2>
+            <a href="{% url 'htmx:doctor_test_results' %}" class="btn">View Test Results</a>
+        </article>
+
+        <article class="portal-card">
+            <h2>Tests Expiring Soon</h2>
+            <ul class="created-tests-list">
+                <li>X test(s) expire within 48 hours</li>
+            </ul>
+        </article>
+
+        <article class="portal-card">
+            <h2>Updates</h2>
+            <p>
+                !!Website Maintenance Notice!! <br>The PPST website will be undergoing maintenance on XX/XX/XXXX from XX:XX am/pm to XX:XX am/pm. <br>During this time, the website may be unavailable. We apologize for any inconvenience and thank you for your understanding.
+            </p>
+        </article>
+    </main>
+
+</body>
+
+</html>

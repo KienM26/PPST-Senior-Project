@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Doctor Account</title>
+
+    <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
+</head>
+
+<body class="page">
+
+    <!-- NAVBAR (FULL WIDTH) -->
+    <header class="navbar">
+        <div class="nav-left">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
+        </div>
+
+        <nav class="nav-right">
+            <a href="{% url 'htmx:home' %}">Home</a>
+            <a href="{% url 'htmx:doctor_login' %}">Login</a>
+            <a href="{% url 'htmx:doctor_create_account' %}" class="nav-active">Create Account</a>
+            <a href="{% url 'htmx:doctor_about' %}">About</a>
+        </nav>
+    </header>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <section class="login-section">
+
+            <!-- LEFT COLUMN: Login -->
+            <div class="login-left">
+                <h1>Create Account</h1>
+                <p class="subtitle">
+                    Already have a PPST account? <a href="{% url 'htmx:doctor_login' %}">Sign in</a>
+                </p>
+
+                <p class="subtitle">
+                    <span class="required-asterisk">*</span> Indicates a required field
+                </p>
+                {% if errors %}
+                    <div class="error-message">
+                        <ul>
+                            {% for error in errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                <br>
+                <form method="post" action="{% url 'htmx:doctor_create_account' %}" class="login-form">
+                    {% csrf_token %}
+                    <label class="form-row-label">Full Name</span></label>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" id="first_name" name="first_name"
+                                value="{{ form_data.first_name|default:'' }}" required>
+                            <label for="first_name">First Name <span class="required-asterisk">*</span></label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="middle_name" name="middle_name"
+                                value="{{ form_data.middle_name|default:'' }}">
+                            <label for="middle_name">Middle Name</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="last_name" name="last_name"
+                                value="{{ form_data.last_name|default:'' }}" required>
+                            <label for="last_name">Last Name <span class="required-asterisk">*</span></label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required-asterisk">*</span></label>
+                        <input type="email" id="email" name="email"
+                            value="{{ form_data.email|default:'' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hospital">Hospital/Organization Name</label>
+                        <input type="text" id="hospital" name="hospital"
+                            value="{{ form_data.hospital|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="practice">Doctor's Office/Practice Name</label>
+                        <input type="text" id="practice" name="practice"
+                            value="{{ form_data.practice|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="license">Medical License Number <span class="required-asterisk">*</span></label>
+                        <input type="text" id="license" name="license" 
+                            value="{{ form_data.license|default:'' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username <span class="required-asterisk">*</span></label>
+                        <input type="text" id="username" name="username" 
+                            value="{{ form_data.username|default:'' }}" required minlength="4" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password <span class="required-asterisk">*</span></label>
+                        <input type="password"
+                            id="password"
+                            name="password"
+                            required
+                            minlength="8"
+                            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}"
+                            title="Must be at least 8 characters, include uppercase, lowercase, number, and special character">
+                    </div>
+                    <small>
+                        Password must be at least 8 characters and include:
+                        uppercase, lowercase, number, and special character.
+                    </small>
+                    <div class="form-group">
+                        <label for="password_confirm">Password Confirmation <span
+                                class="required-asterisk">*</span></label>
+                        <input type="password" id="password_confirm" name="password_confirm" required>
+                    </div>
+                    <button type="submit" class="btn">Submit</button>
+                </form>
+            </div>
+
+            <!-- RIGHT COLUMN: Placeholder Image -->
+            <div class="login-right">
+                <img src="https://via.placeholder.com/500x400" alt="Create Account illustration">
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

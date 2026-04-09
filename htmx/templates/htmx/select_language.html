@@ -1,0 +1,70 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Language</title>
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+</head>
+<body class="select-language-page">
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="title">Select Your Language</h1>
+
+        <div class="speaker-wrap" onclick="playAudio('Welcome')" style="cursor:pointer;">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Audio icon">
+        </div>
+    </header>
+
+    <div class="gray-line"></div>
+
+    <main class="page-content">
+        <section class="cards">
+            <div class="language-card">
+                <div class="flag-wrap">
+                    <img src="{% static 'htmx/images/flag-mexico.png' %}" alt="Mexican flag">
+                </div>
+                <form method="get" action="{% url 'htmx:Accessibility' %}" class="language-form">
+                    <input type="hidden" name="lang" value="es">
+                    <button type="submit" class="btn">Espa&ntilde;ol</button>
+                </form>
+            </div>
+
+            <div class="language-card">
+                <div class="flag-wrap">
+                    <img src="{% static 'htmx/images/flag-usa.png' %}" alt="English flag">
+                </div>
+                <form method="get" action="{% url 'htmx:Accessibility' %}" class="language-form">
+                    <input type="hidden" name="lang" value="en">
+                    <button type="submit" class="btn">English</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+function playAudio(baseName) {
+    // First page defaults
+    const lang = "english";
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (voice === "female") {
+        fileName = baseName + ".mp3";   // Welcome.mp3
+    } else {
+        fileName = baseName + "1.mp3";  // Welcome1.mp3
+    }
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
+</script>
+</body>
+</html>

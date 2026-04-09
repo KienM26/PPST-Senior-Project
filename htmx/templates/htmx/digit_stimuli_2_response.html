@@ -1,0 +1,156 @@
+{% load static %}
+<!-- Fiona Lockhart 3/12/2026 -->
+<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ text.title_response }} 2</title>
+
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+
+    <style>
+        :root {
+            --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+            --button-color: {{ current_theme.button|default:"#0f9db7" }};
+        }
+    </style>
+</head>
+
+<body class="digit-stimuli-response-page">
+
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="title">{{ text.title_response }} 2</h1>
+
+        <div class="speaker-wrap" onclick="playAudio('Digit_Response_2')" style="cursor:pointer;">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+        </div>
+
+        <div class="lang-badge">
+            {{ lang_info.label }}
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+        </div>
+    </header>
+
+    <div class="gray-line"></div>
+
+    <main class="response-panel">
+
+        <div class="prompt-box">
+            {{ text.prompt }}
+        </div>
+
+        <form method="get" action="{% url 'htmx:digitStimuli3' %}" onsubmit="saveAndContinue()">
+            <input type="hidden" name="response" id="response">
+            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
+
+            <div class="keypad">
+
+                <button type="button" class="key" onclick="press(1)">1</button>
+                <button type="button" class="key" onclick="press(2)">2</button>
+                <button type="button" class="key" onclick="press(3)">3</button>
+
+                <button type="button" class="key" onclick="press(4)">4</button>
+                <button type="button" class="key" onclick="press(5)">5</button>
+                <button type="button" class="key" onclick="press(6)">6</button>
+
+                <button type="button" class="key" onclick="press(7)">7</button>
+                <button type="button" class="key" onclick="press(8)">8</button>
+                <button type="button" class="key" onclick="press(9)">9</button>
+
+            </div>
+
+            <div class="submit-wrap">
+                <button type="submit" class="btn">{{ text.submit }}</button>
+            </div>
+
+        </form>
+
+    </main>
+
+    <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
+    <script>
+        let answer = [];
+
+    ppstTestBuffer.startCapture();
+
+    function speakDigit(num) {
+        const langValue = "{{ lang|default:'en' }}";
+        const isSpanish = langValue === "es";
+
+        const digitNamesEn = {
+            1: "one",
+            2: "two",
+            3: "three",
+            4: "four",
+            5: "five",
+            6: "six",
+            7: "seven",
+            8: "eight",
+            9: "nine"
+        };
+
+        const digitNamesEs = {
+            1: "uno",
+            2: "dos",
+            3: "tres",
+            4: "cuatro",
+            5: "cinco",
+            6: "seis",
+            7: "siete",
+            8: "ocho",
+            9: "nueve"
+        };
+
+        const textToSpeak = isSpanish ? digitNamesEs[num] : digitNamesEn[num];
+
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = isSpanish ? "es-ES" : "en-US";
+        utterance.rate = 0.9;
+
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utterance);
+    }
+
+    function press(num) {
+        answer.push(num);
+        document.getElementById("response").value = answer.join("");
+        ppstTestBuffer.press(num);
+        speakDigit(num);
+    }
+
+    function saveAndContinue() {
+        ppstTestBuffer.saveCurrentResponse("digit_stimuli_2", "digit");
+    }
+    </script>
+
+    <script>
+    function playAudio(baseName) {
+    const langValue = "{{ lang|default:'en' }}";
+    const lang = langValue === "es" ? "spanish" : "english";
+
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (lang === "english" && voice === "female") fileName = baseName + ".mp3";
+    if (lang === "english" && voice === "male") fileName = baseName + "1.mp3";
+    if (lang === "spanish" && voice === "female") fileName = baseName + "2.mp3";
+    if (lang === "spanish" && voice === "male") fileName = baseName + "3.mp3";
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
+</script>
+
+</body>
+
+</html>

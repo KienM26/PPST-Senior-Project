@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ text.page_title|default:"Test Instructions" }}</title>
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+</head>
+
+<body>
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="page-title">{{ text.page_title|default:"Test Instructions" }}</h1>
+
+        <div class="speaker-wrap">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+        </div>
+
+        <div class="lang-badge">
+            {{ lang_info.label|default:"English" }}
+            <img src="{% static lang_info.flag|default:'htmx/images/flag-usa.png' %}" alt="{{ lang_info.label|default:'English' }}">
+        </div>
+    </header>
+
+    <div class="gray-line"></div>
+
+    <main class="page-content">
+        <div class="panel">
+            <h2>{{ text.intro_heading|default:"Before You Begin" }}</h2>
+
+            <div class="instructions">
+                {% if text.intro_body %}
+                {% for line in text.intro_body %}
+                <div>{{ line }}</div>
+                {% endfor %}
+                {% else %}
+                <div>THIS IS A TEMPORARY PLACEHOLDER PAGE</div>
+                <div>YOUR REAL INTRO INSTRUCTIONS CAN GO HERE LATER</div>
+                {% endif %}
+            </div>
+
+            <form method="post" action="{% url 'htmx:practiceTestNext' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn centered">
+                    {{ text.intro_button|default:"Next" }}
+                </button>
+            </form>
+        </div>
+    </main>
+</body>
+
+<script>
+    const buttons = document.querySelectorAll('.voice-option');
+    const input = document.getElementById('voiceInput');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('selected'));
+
+            btn.classList.add('selected');
+
+            input.value = btn.dataset.voice;
+        });
+    });
+</script>
+
+</html>

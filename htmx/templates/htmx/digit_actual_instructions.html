@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Instructions</title>
+
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+
+    <style>
+        :root {
+            --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+            --button-color: {{ current_theme.button|default:"#0f9db7" }};
+            --page-bg: #efeded;
+            --panel-bg: #ffffff;
+            --text-dark: #111111;
+        }
+
+        .instruction-panel {
+            background: var(--panel-bg);
+            border: 1px solid #777;
+            border-radius: 4px;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 50px 30px;
+            text-align: center;
+        }
+
+        .instruction-title {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+        }
+
+        .instruction-text {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.4;
+            max-width: 900px;
+            margin: 0 auto 60px auto;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 700px) {
+            .instruction-title {
+                font-size: 40px;
+            }
+
+            .instruction-text {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body style="background: var(--page-bg);">
+
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="title">{{ text.title }}</h1>
+
+        <div class="speaker-wrap" onclick="playAudio('Digit_Actual_Instructions')" style="cursor:pointer;">
+            <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
+        </div>
+
+        <div class="lang-badge">
+            {{ lang_info.label }}
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+        </div>
+    </header>
+
+    <div class="gray-line"></div>
+
+    <main class="instruction-panel">
+        <h2 class="instruction-title">{{ text.digit_test }}</h2>
+
+        <p class="instruction-text">
+            {{ text.digit_actual_instructions }}
+        </p>
+
+
+   <form method="post" action="{% url 'htmx:startDigitTest' %}" onsubmit="if (window.ppstTestBuffer) ppstTestBuffer.clear()">
+    {% csrf_token %}
+    <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
+    <button type="submit" class="btn centered">{{ text.actual_test_button }}</button>
+    </form>
+
+    </main>
+<script>
+function playAudio(baseName) {
+    const langValue = "{{ lang|default:'en' }}";
+    const lang = langValue === "es" ? "spanish" : "english";
+
+    const voice = localStorage.getItem("selectedVoice") || "female";
+
+    let fileName = "";
+
+    if (lang === "english" && voice === "female") fileName = baseName + ".mp3";
+    if (lang === "english" && voice === "male") fileName = baseName + "1.mp3";
+    if (lang === "spanish" && voice === "female") fileName = baseName + "2.mp3";
+    if (lang === "spanish" && voice === "male") fileName = baseName + "3.mp3";
+
+    const audioPath = `/static/htmx/audio/${lang}/${voice}/${fileName}`;
+    const audio = new Audio(audioPath);
+    audio.currentTime = 0;
+    audio.play();
+}
+</script>
+    <script src="{% static 'htmx/test_response_buffer.js' %}"></script>
+
+</body>
+</html>
