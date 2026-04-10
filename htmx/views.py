@@ -654,9 +654,117 @@ def doctor_dashboard(request):
 @login_required
 @require_GET
 def doctor_create_test(request):
+    recent_tests = Test.objects.filter(
+        doctor=request.user,
+        token__isnull=False
+    ).order_by('-created_at')[:10]
     return render(request, 'htmx/doctorportal/doctor_create_test.html', {
-        "user": request.user
+        "user": request.user,
+        "recent_tests": recent_tests,
     })
+
+
+@login_required
+@require_POST
+def generate_test_link(request):
+    import uuid as uuid_module
+    from datetime import datetime, timedelta, timezone as dt_timezone
+
+    patient_age      = request.POST.get("patient_age", "").strip()
+    device_email     = request.POST.get("device_email", "").strip()
+    expiration_hours = request.POST.get("expiration_hours", "48").strip()
+
+    errors = {}
+    if not patient_age or not patient_age.isdigit() or not (1 <= int(patient_age) <= 120):
+        errors["patient_age"] = "A valid patient age (1–120) is required."
+    if not device_email:
+        errors["device_email"] = "A device email is required."
+    try:
+        exp_hours = int(expiration_hours)
+        if exp_hours < 1 or exp_hours > 720:
+            raise ValueError
+    except ValueError:
+        exp_hours = 48
+
+    if errors:
+        return JsonResponse({"success": False, "errors": errors}, status=400)
+
+    expiration_dt = datetime.now(dt_timezone.utc) + timedelta(hours=exp_hours)
+    token = uuid_module.uuid4()
+
+    test = Test.objects.create(
+        doctor=request.user,
+        status="pending",
+        test_taker_age=int(patient_age),
+        is_independent=False,
+        token=token,
+        patient_email=device_email,
+        expiration_date=expiration_dt,
+    )
+
+    test_url = request.build_absolute_uri(f"/htmx/take_test/{token}/")
+
+    return JsonResponse({
+        "success": True,
+        "test_id": test.id,
+        "token": str(token),
+        "link": test_url,
+        "sent_to": device_email,
+        "expires": expiration_dt.strftime("%m/%d/%Y at %I:%M %p UTC"),
+        "created_at": test.created_at.strftime("%m/%d/%Y at %I:%M %p") if test.created_at else "",
+    })
+
+
+@require_GET
+def take_test(request, token):
+    from datetime import datetime, timezone as dt_timezone
+
+    test = get_object_or_404(Test, token=token)
+
+    if test.expiration_date and datetime.now(dt_timezone.utc) > test.expiration_date:
+        test.status = "expired"
+        test.save(update_fields=["status"])
+        return render(request, "htmx/test_expired.html", {"test": test})
+
+    if test.status == "completed":
+        return render(request, "htmx/test_already_completed.html", {"test": test})
+
+    if test.status == "pending":
+        test.status = "active"
+        test.save(update_fields=["status"])
+
+    combined_stimuli = [
+        {**s, "stimulus_type": "digit"} for s in DIGIT_STIMULI_DATA
+    ] + [
+        {**s, "stimulus_type": "mixed"} for s in MIXED_STIMULI_DATA
+    ]
+
+    if not test.stimuli.exists():
+        for stimulus in combined_stimuli:
+            Stimulus.objects.create(
+                test=test,
+                stimulus_string=stimulus["sequence"],
+                correct_answer=stimulus["correct_answer"],
+                stimulus_type=stimulus["stimulus_type"],
+                span_length=len(stimulus["sequence"]),
+            )
+
+    all_stimuli   = list(test.stimuli.all())
+    digit_stimuli = [s for s in all_stimuli if s.stimulus_type == "digit"]
+    mixed_stimuli = [s for s in all_stimuli if s.stimulus_type == "mixed"]
+    stimulus_ids_keyed = {}
+    for i, s in enumerate(digit_stimuli, 1):
+        stimulus_ids_keyed[f"digit_stimuli_{i}"] = s.id
+    for i, s in enumerate(mixed_stimuli, 1):
+        stimulus_ids_keyed[f"mixed_stimuli_{i}"] = s.id
+
+    request.session["current_test_id"]           = test.id
+    request.session["current_test_type"]          = "full"
+    request.session["current_test_stimulus_ids"]  = stimulus_ids_keyed
+    request.session["lang"]                       = "en"
+
+    return redirect("htmx:SelectLanguage")
+
 @login_required
 @require_GET
 def doctor_test_results(request):

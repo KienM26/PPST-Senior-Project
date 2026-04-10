@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Link Expired</title>
+    <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
+    <style>
+        .error-card {
+            max-width: 520px;
+            margin: 80px auto;
+            text-align: center;
+            padding: 2.5rem 2rem;
+        }
+        .error-card h1 { margin-bottom: 1rem; }
+        .error-card p  { margin-bottom: 1.5rem; color: #555; }
+    </style>
+</head>
+<body class="page">
+    <header class="navbar">
+        <div class="nav-left">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
+        </div>
+    </header>
+    <main class="main-content">
+        <article class="portal-card error-card">
+            <h1>This Test Link Has Expired</h1>
+            <p>
+                The test link you followed is no longer valid. Please contact your
+                healthcare provider to request a new test link.
+            </p>
+            <p><strong>Test ID:</strong> {{ test.id }}</p>
+        </article>
+    </main>
+</body>
+</html>

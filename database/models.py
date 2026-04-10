@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -46,7 +47,9 @@ class Test(models.Model):
     expiration_date = models.DateTimeField(null=True, blank=True)
     test_taker_age = models.PositiveIntegerField()
     is_independent = models.BooleanField(default=True)
-
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, null=True, blank=True)
+    patient_email = models.EmailField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f"Test {self.id} - {self.status}"
