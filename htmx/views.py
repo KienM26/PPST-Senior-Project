@@ -6,6 +6,7 @@ from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.utils import timezone
 
 from django.db.models import Avg
 
@@ -362,6 +363,22 @@ def start_practice_test(request):
 
 @require_POST
 def start_digit_test(request):
+    # If a token-based test was already set up by take_test, reuse it.
+    existing_test_id = request.session.get("current_test_id")
+    existing_stimulus_ids = request.session.get("current_test_stimulus_ids")
+
+    if existing_test_id and existing_stimulus_ids:
+        # Verify the test exists and is still active
+        try:
+            test = Test.objects.get(id=existing_test_id, status="active")
+            request.session["test_started_at"] = timezone.now().isoformat()
+            # Session already has stimulus IDs from take_test — just proceed.
+            request.session["current_test_type"] = "full"
+            return redirect("htmx:digitStimuli1")
+        except Test.DoesNotExist:
+            pass  # Fall through to create a new test if the existing one is gone
+
+    # No existing test session — create a fresh standalone test.
     combined_stimuli = [
         {**stimulus, "stimulus_type": "digit"} for stimulus in DIGIT_STIMULI_DATA
     ] + [
@@ -374,6 +391,8 @@ def start_digit_test(request):
         test_taker_age=12,
         is_independent=True,
     )
+
+    request.session["test_started_at"] = timezone.now().isoformat()
 
     stimulus_ids = {}
     for stimulus in combined_stimuli:
@@ -1396,10 +1415,18 @@ def submit_test_responses(request):
                     time=latency_time,
                 )
 
+        from datetime import datetime
+        started_at_iso = request.session.get("test_started_at")
+        if started_at_iso:
+            started_at_dt = datetime.fromisoformat(started_at_iso)
+            wall_total_time = int((timezone.now() - started_at_dt).total_seconds() * 1000)
+        else:
+            wall_total_time = total_time
+
         Results.objects.update_or_create(
             test=test,
             defaults={
-                "total_time": total_time,
+                "total_time": wall_total_time,
                 "response_time": total_time,
                 "num_of_correct": num_correct,
                 "num_of_incorrect": num_incorrect,
@@ -1409,7 +1436,7 @@ def submit_test_responses(request):
         test.status = "completed"
         test.save(update_fields=["status"])
 
-    for key in ("current_test_id", "current_test_type", "current_test_stimulus_ids"):
+    for key in ("current_test_id", "current_test_type", "current_test_stimulus_ids", "test_started_at"):
         request.session.pop(key, None)
 
     return JsonResponse({"ok": True})
