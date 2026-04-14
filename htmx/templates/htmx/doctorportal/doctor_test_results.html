@@ -42,6 +42,7 @@
                             <tr>
                                 <th>Test ID</th>
                                 <th>Status</th>
+                                <th>Created</th>
                                 <th>Amount of Time</th>
                                 <th>Expiration Date</th>
                                 <th>Results</th>
@@ -60,6 +61,13 @@
                                         <span class="status-pill status-in-progress">In Progress</span>
                                     {% else %}
                                         <span class="status-pill status-not-started">Not Started</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.created_at %}
+                                        {{ test.created_at|date:"n/j/Y" }}
+                                    {% else %}
+                                        --
                                     {% endif %}
                                 </td>
                                 <td>{{ test.formatted_total_time }}</td>
@@ -82,7 +90,7 @@
                             </tr>
                             {% empty %}
                             <tr class="empty-row">
-                                <td colspan="5">No tests available.</td>
+                                <td colspan="6">No tests available.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -126,7 +134,7 @@
                     </div>
 
                     <div class="chart-box">
-                        <h3 class="chart-title">Completion Time Distribution</h3>
+                        <h3 class="chart-title">Completion Time Distribution (10 Most Recent)</h3>
                         <canvas id="completionChart"></canvas>
                     </div>
                 </div>
