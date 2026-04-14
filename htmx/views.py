@@ -801,6 +801,7 @@ def doctor_settings(request):
         "user": request.user
     })
 
+@login_required
 @require_GET
 def doctor_support(request):
     return render(request, 'htmx/doctorportal/doctor_support.html', {})
@@ -1441,12 +1442,9 @@ def submit_test_responses(request):
 
     return JsonResponse({"ok": True})
 
+@login_required
 def doctor_test_results(request):
-    # Use all tests if user is anonymous
-    if request.user.is_authenticated:
-        tests = Test.objects.filter(doctor=request.user).select_related('results')
-    else:
-        tests = Test.objects.all().select_related('results')
+    tests = Test.objects.filter(doctor=request.user).select_related('results')
 
     completed_tests = tests.filter(status='completed', results__isnull=False)
 
@@ -1504,12 +1502,14 @@ def doctor_test_results(request):
 
     # ----------------------------
     # COMPLETION TIME CHART
-    # Store chart values in SECONDS instead of ms
+    # Only the 10 most recent completed tests, store in SECONDS instead of ms
     # ----------------------------
     completion_chart_labels = []
     completion_chart_data = []
 
-    for test in completed_tests.order_by('id'):
+    recent_completed = list(completed_tests.order_by('-created_at')[:10])
+    recent_completed.reverse()  # oldest → newest left to right on chart
+    for test in recent_completed:
         try:
             result = test.results
             completion_chart_labels.append(f"Test {test.id}")
@@ -1526,8 +1526,24 @@ def doctor_test_results(request):
         except:
             test.formatted_total_time = "--"
 
+    # ----------------------------
+    # SORT: active (in progress) + pending (not started) by id first,
+    # then completed (newest first), then expired
+    # Uses Python sort so we never touch the DB ordering
+    # ----------------------------
+    STATUS_ORDER = {'active': 0, 'pending': 1, 'completed': 2, 'expired': 3}
+
+    def sort_key(t):
+        status_rank = STATUS_ORDER.get(t.status, 4)
+        if t.status == 'completed':
+            ts = t.created_at.timestamp() if t.created_at else 0
+            return (status_rank, -ts, t.id)
+        return (status_rank, 0, t.id)
+
+    sorted_tests = sorted(list(tests), key=sort_key)
+
     context = {
-        "tests": tests,
+        "tests": sorted_tests,
         "completed_tests_count": completed_tests_count,
 
         # raw values if ever needed
@@ -1578,6 +1594,7 @@ def format_ms(ms):
     return f"{seconds} sec"
 
 
+@login_required
 def doctor_test_result(request, test_id):
     test = get_object_or_404(Test, id=test_id)
 
@@ -1639,6 +1656,7 @@ def doctor_test_result(request, test_id):
 
     return render(request, "htmx/doctorportal/doctor_test_result.html", context)
 
+@login_required
 def doctor_test_result_csv(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     result = getattr(test, "results", None)  # link to Results
@@ -1678,57 +1696,103 @@ def doctor_test_result_csv(request, test_id):
     response['Content-Disposition'] = f'attachment; filename="test_{test.id}_results.csv"'
     writer = csv.writer(response)
 
+    # --- Test Info Section ---
+    writer.writerow(['Test Information'])
+    writer.writerow(['Test ID', test.id])
+    writer.writerow(['Status', test.get_status_display()])
+    writer.writerow(['Created At', test.created_at.strftime('%m/%d/%Y %H:%M') if test.created_at else '--'])
+    writer.writerow(['Expiration Date', test.expiration_date.strftime('%m/%d/%Y %H:%M') if test.expiration_date else '--'])
+    writer.writerow(['Test Taker Age', test.test_taker_age])
+    writer.writerow(['Age Group', age_label])
+    writer.writerow(['Independent', 'Yes' if test.is_independent else 'No'])
+    writer.writerow([])
+
     # --- Summary Section ---
     writer.writerow(['Summary', 'Patient', f'Average for Age {age_label}'])
-    writer.writerow(['Accuracy', result.accuracy if result else "--", avg_accuracy])
-    writer.writerow(['Completion Time', result.total_time if result else "--", avg_completion])
-    writer.writerow(['Avg Response', result.response_time if result else "--", "--"])
-    writer.writerow(['Correct', result.num_of_correct if result else "--", "--"])
-    writer.writerow(['Incorrect', result.num_of_incorrect if result else "--", "--"])
-    writer.writerow(['Age', test.test_taker_age, age_label])
+    writer.writerow(['Accuracy (%)', round(result.accuracy, 1) if result else "--", avg_accuracy])
+    writer.writerow(['Completion Time (ms)', result.total_time if result else "--", avg_completion])
+    writer.writerow(['Completion Time (formatted)', format_ms(result.total_time) if result else "--", format_ms(avg_completion) if isinstance(avg_completion, (int, float)) else "--"])
+    writer.writerow(['Avg Response Time (ms)', result.response_time if result else "--", "--"])
+    writer.writerow(['Correct Responses', result.num_of_correct if result else "--", "--"])
+    writer.writerow(['Incorrect Responses', result.num_of_incorrect if result else "--", "--"])
+    total_answered = (result.num_of_correct + result.num_of_incorrect) if result else 0
+    writer.writerow(['Total Responses', total_answered if result else "--", "--"])
     writer.writerow([])
 
     # --- Detailed Responses Section ---
-    writer.writerow(['Stimulus', 'Type', 'Span Length', 'Correct Answer', 'Patient Response', 'Correct?', 'Latency per Input (ms)'])
-    responses = Response.objects.filter(test=test)
-    for resp in responses:
+    responses = Response.objects.filter(test=test).select_related('stimulus').prefetch_related('latencies')
+    writer.writerow(['Detailed Responses'])
+    writer.writerow(['#', 'Stimulus', 'Type', 'Span Length', 'Correct Answer', 'Patient Response', 'Correct?', 'Total Latency (ms)', 'Latency per Input (ms)'])
+    for i, resp in enumerate(responses, start=1):
         latencies = Latency.objects.filter(response=resp).order_by('input_order')
-        latency_str = ", ".join(str(l.time) for l in latencies)
+        latency_values = [l.time for l in latencies]
+        latency_str = ", ".join(str(t) for t in latency_values)
+        total_latency = sum(latency_values) if latency_values else "--"
         writer.writerow([
+            i,
             resp.stimulus.stimulus_string,
-            resp.stimulus.stimulus_type,
+            resp.stimulus.stimulus_type.capitalize(),
             resp.stimulus.span_length,
             resp.stimulus.correct_answer,
             resp.response_string,
             "Yes" if resp.is_correct else "No",
+            total_latency,
             latency_str
         ])
     writer.writerow([])
 
     # --- Aggregate Stats by Stimulus Type ---
     stimulus_types = responses.values_list('stimulus__stimulus_type', flat=True).distinct()
-    writer.writerow(['Aggregate by Stimulus Type', 'Average Accuracy', 'Average Completion Time (ms)', 'Average Response Time (ms)'])
+    writer.writerow(['Aggregate by Stimulus Type'])
+    writer.writerow(['Type', 'Total Responses', 'Correct', 'Incorrect', 'Accuracy (%)', 'Avg Completion Time (ms)', 'Avg Response Time (ms)'])
     for stype in stimulus_types:
         type_responses = [r for r in responses if r.stimulus.stimulus_type == stype]
         if type_responses:
+            correct_count = sum(1 for r in type_responses if r.is_correct)
+            incorrect_count = len(type_responses) - correct_count
+            type_accuracy = round(correct_count / len(type_responses) * 100, 1) if type_responses else "--"
             type_results = [r for r in type_responses if hasattr(r.test, 'results')]
             if type_results:
-                avg_acc = round(sum(r.test.results.accuracy for r in type_results)/len(type_results), 1)
                 avg_comp = round(sum(r.test.results.total_time for r in type_results)/len(type_results), 1)
                 avg_resp = round(sum(r.test.results.response_time for r in type_results)/len(type_results), 1)
             else:
-                avg_acc = avg_comp = avg_resp = "--"
-            writer.writerow([stype, avg_acc, avg_comp, avg_resp])
+                avg_comp = avg_resp = "--"
+            writer.writerow([stype.capitalize(), len(type_responses), correct_count, incorrect_count, type_accuracy, avg_comp, avg_resp])
     writer.writerow([])
 
     # --- Stats by Span Length ---
-    span_lengths = responses.values_list('stimulus__span_length', flat=True).distinct()
-    writer.writerow(['Aggregate by Span Length', 'Average Correct', 'Average Incorrect'])
+    span_lengths = sorted(responses.values_list('stimulus__span_length', flat=True).distinct())
+    writer.writerow(['Aggregate by Span Length'])
+    writer.writerow(['Span Length', 'Total Trials', 'Correct Trials', 'Incorrect Trials', 'Accuracy (%)'])
     for span in span_lengths:
         span_responses = [r for r in responses if r.stimulus.span_length == span]
         if span_responses:
-            avg_correct = round(sum(r.is_correct for r in span_responses)/len(span_responses) * span, 1)
-            avg_incorrect = span - avg_correct
-            writer.writerow([span, avg_correct, avg_incorrect])
+            correct_count = sum(1 for r in span_responses if r.is_correct)
+            incorrect_count = len(span_responses) - correct_count
+            span_accuracy = round(correct_count / len(span_responses) * 100, 1)
+            writer.writerow([span, len(span_responses), correct_count, incorrect_count, span_accuracy])
+    writer.writerow([])
+
+    # --- Latency Analysis ---
+    writer.writerow(['Latency Analysis'])
+    writer.writerow(['Stimulus', 'Type', 'Span Length', 'Input #', 'Input Value', 'Latency (ms)'])
+    for resp in responses:
+        latencies = Latency.objects.filter(response=resp).order_by('input_order')
+        for lat in latencies:
+            writer.writerow([
+                resp.stimulus.stimulus_string,
+                resp.stimulus.stimulus_type.capitalize(),
+                resp.stimulus.span_length,
+                lat.input_order,
+                lat.input_value,
+                lat.time
+            ])
+    writer.writerow([])
+
+    # --- Age Group Comparison ---
+    writer.writerow(['Age Group Comparison'])
+    writer.writerow(['Metric', f'This Patient (Age {test.test_taker_age})', f'Age Group Average ({age_label})'])
+    writer.writerow(['Accuracy (%)', round(result.accuracy, 1) if result else "--", avg_accuracy])
+    writer.writerow(['Completion Time (ms)', result.total_time if result else "--", avg_completion])
 
     return response
