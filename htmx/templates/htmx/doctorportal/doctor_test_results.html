@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,16 +27,18 @@
     </nav>
 
     <main class="main-content">
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-text">
+                <h1>Test Results</h1>
+                <h2>View test results for your patients</h2>
+            </div>
+        </section>
         <div class="results-page-shell">
-
-            <!-- PAGE TITLE -->
-            <h1 class="results-page-title">Test Results</h1>
-            <p class="results-page-subtitle">View Test Results For Your Patients</p>
-
             <h2 class="section-heading">Search</h2>
             <div class="results-filter-box">
-    <input type="text" id="testFilter" placeholder="Search Test ID, status, date..." />
-</div>
+                <input type="text" id="testFilter" placeholder="Search by Test ID, status, or created date (MM/DD/YYYY)" />
+            </div>
 
             <!-- TEST RESULTS -->
             <section class="results-section">
@@ -55,41 +58,41 @@
                         </thead>
                         <tbody>
                             {% for test in tests %}
-                            <tr>
+                            <tr data-search="{{ test.id }} {{ test.status }} {{ test.get_status_display }} {% if test.status == 'active' %}in progress{% elif test.status == 'pending' %}not started{% endif %} {% if test.created_at %}{{ test.created_at|date:'n/j/Y' }} {{ test.created_at|date:'m/d/Y' }} {{ test.created_at|date:'Y-m-d' }}{% endif %}">
                                 <td>
                                     <span class="id-pill">{{ test.id }}</span>
                                 </td>
                                 <td>
                                     {% if test.status == 'completed' %}
-                                        <span class="status-pill status-completed">{{ test.get_status_display }}</span>
+                                    <span class="status-pill status-completed">{{ test.get_status_display }}</span>
                                     {% elif test.status == 'active' %}
-                                        <span class="status-pill status-in-progress">In Progress</span>
+                                    <span class="status-pill status-in-progress">In Progress</span>
                                     {% else %}
-                                        <span class="status-pill status-not-started">Not Started</span>
+                                    <span class="status-pill status-not-started">Not Started</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if test.created_at %}
-                                        {{ test.created_at|date:"n/j/Y" }}
+                                    {{ test.created_at|date:"n/j/Y" }}
                                     {% else %}
-                                        --
+                                    --
                                     {% endif %}
                                 </td>
                                 <td>{{ test.formatted_total_time }}</td>
                                 <td>
                                     {% if test.expiration_date %}
-                                        {{ test.expiration_date|date:"n/j/Y" }}
+                                    {{ test.expiration_date|date:"n/j/Y" }}
                                     {% else %}
-                                        --
+                                    --
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if test.status == 'completed' %}
-                                        <a class="results-btn" href="{% url 'htmx:doctor_test_result' test.id %}">
-                                            View Results
-                                        </a>
+                                    <a class="results-btn" href="{% url 'htmx:doctor_test_result' test.id %}">
+                                        View Results
+                                    </a>
                                     {% else %}
-                                        <span class="results-btn disabled-btn">View Results</span>
+                                    <span class="disabled-btn">View Results</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -150,14 +153,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ageChartLabels = {{ age_chart_labels|safe }};
-        const ageChartData = {{ age_chart_data|safe }};
+        const ageChartLabels = {{ age_chart_labels| safe }};
+        const ageChartData = {{ age_chart_data| safe }};
 
-        const accuracyChartLabels = {{ accuracy_chart_labels|safe }};
-        const accuracyChartData = {{ accuracy_chart_data|safe }};
+        const accuracyChartLabels = {{ accuracy_chart_labels| safe }};
+        const accuracyChartData = {{ accuracy_chart_data| safe }};
 
-        const completionChartLabels = {{ completion_chart_labels|safe }};
-        const completionChartData = {{ completion_chart_data|safe }};
+        const completionChartLabels = {{ completion_chart_labels| safe }};
+        const completionChartData = {{ completion_chart_data| safe }};
 
         const chartOptions = {
             responsive: true,
@@ -276,16 +279,59 @@
     </script>
 
     <script>
-document.getElementById("testFilter").addEventListener("input", function () {
-    const value = this.value.toLowerCase();
-    const rows = document.querySelectorAll(".results-table tbody tr");
+        document.addEventListener("DOMContentLoaded", function () {
+            const filterInput = document.getElementById("testFilter");
+            const tableBody = document.querySelector(".results-table tbody");
 
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(value) ? "" : "none";
-    });
-});
-</script>
+            if (!filterInput || !tableBody) {
+                return;
+            }
+
+            const rows = Array.from(tableBody.querySelectorAll("tr")).filter(function (row) {
+                return !row.classList.contains("empty-row");
+            });
+
+            const emptyRow = tableBody.querySelector(".empty-row");
+            let noMatchRow = null;
+
+            function ensureNoMatchRow() {
+                if (noMatchRow) {
+                    return noMatchRow;
+                }
+
+                noMatchRow = document.createElement("tr");
+                noMatchRow.className = "empty-row search-empty-row";
+                noMatchRow.innerHTML = '<td colspan="6">No matching tests found.</td>';
+                noMatchRow.style.display = "none";
+                tableBody.appendChild(noMatchRow);
+                return noMatchRow;
+            }
+
+            filterInput.addEventListener("input", function () {
+                const query = filterInput.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                rows.forEach(function (row) {
+                    const searchableText = (row.dataset.search || row.textContent).toLowerCase();
+
+                    const isMatch = query === "" || searchableText.includes(query);
+                    row.style.display = isMatch ? "" : "none";
+
+                    if (isMatch) {
+                        visibleCount += 1;
+                    }
+                });
+
+                if (emptyRow) {
+                    emptyRow.style.display = query === "" && rows.length === 0 ? "" : "none";
+                }
+
+                const matchRow = ensureNoMatchRow();
+                matchRow.style.display = query !== "" && visibleCount === 0 && rows.length > 0 ? "" : "none";
+            });
+        });
+    </script>
 
 </body>
+
 </html>
