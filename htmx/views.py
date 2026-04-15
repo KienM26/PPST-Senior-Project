@@ -12,12 +12,13 @@ from django.db.models import Avg
 
 from database.models import Latency, Response, Results, Stimulus, Test
 
-from datetime import date
+from datetime import date, timedelta
 import json
 
 from django.contrib.auth import authenticate, login, logout
 from database.models import Doctor
 from django.contrib.auth.decorators import login_required
+from django.utils.dateparse import parse_datetime
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -576,6 +577,11 @@ def doctor_login(request):
                     "error": "Account not approved yet"
                 })
 
+            # Capture the prior login timestamp before Django updates last_login.
+            request.session["previous_login_at"] = (
+                user.last_login.isoformat() if user.last_login else ""
+            )
+
             login(request, user)
             return redirect("htmx:doctor_dashboard")
 
@@ -666,8 +672,32 @@ def doctor_create_account(request):
 @login_required
 @require_GET
 def doctor_dashboard(request):
+    now = timezone.now()
+    previous_login_raw = request.session.get("previous_login_at", "")
+    previous_login_at = parse_datetime(previous_login_raw) if previous_login_raw else None
+
+    tests = Test.objects.filter(doctor=request.user).select_related("results")
+
+    completed_tests = tests.filter(status="completed", results__isnull=False)
+    if previous_login_at:
+        completed_tests = completed_tests.filter(results__created_at__gte=previous_login_at)
+    else:
+        completed_tests = completed_tests.none()
+
+    in_progress_tests = tests.filter(status="active")
+
+    expiring_soon = tests.filter(
+        expiration_date__isnull=False,
+        expiration_date__gte=now,
+        expiration_date__lte=now + timedelta(hours=48),
+    ).exclude(status="completed").exclude(status="expired")
+
     return render(request, 'htmx/doctorportal/doctor_dashboard.html', {
-        "user": request.user
+        "user": request.user,
+        "completed_tests": completed_tests.order_by("-results__created_at"),
+        "in_progress_tests": in_progress_tests.order_by("expiration_date", "id"),
+        "expiring_soon": expiring_soon.order_by("expiration_date", "id"),
+        "previous_login_at": previous_login_at,
     })
 
 @login_required
@@ -795,10 +825,59 @@ def doctor_test_results(request):
 def doctor_test_result(request, test_id):
     return render(request, 'htmx/doctorportal/doctor_test_result.html', {'test_id': test_id})
 @login_required
-@require_GET
+@require_http_methods(["GET", "POST"])
 def doctor_settings(request):
+    profile_errors = []
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        middle_initial = request.POST.get("middle_initial", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        organization_name = request.POST.get("organization_name", "").strip()
+        office_name = request.POST.get("office_name", "").strip()
+
+        if not first_name:
+            profile_errors.append("First name is required.")
+        if not last_name:
+            profile_errors.append("Last name is required.")
+        if not email:
+            profile_errors.append("Email is required.")
+        if not organization_name:
+            profile_errors.append("Hospital/Organization is required.")
+        if not office_name:
+            profile_errors.append("Doctor's Office/Practice Name is required.")
+
+        if middle_initial and len(middle_initial) > 1:
+            profile_errors.append("Middle initial must be one character.")
+
+        if email:
+            try:
+                validate_email(email)
+            except ValidationError:
+                profile_errors.append("Enter a valid email address.")
+
+        if not profile_errors:
+            request.user.first_name = first_name
+            request.user.middle_initial = middle_initial.upper()
+            request.user.last_name = last_name
+            request.user.email = email
+            request.user.organization_name = organization_name
+            request.user.office_name = office_name
+            request.user.save(update_fields=[
+                "first_name",
+                "middle_initial",
+                "last_name",
+                "email",
+                "organization_name",
+                "office_name",
+            ])
+            return redirect("htmx:doctor_settings")
+
     return render(request, 'htmx/doctorportal/doctor_settings.html', {
-        "user": request.user
+        "user": request.user,
+        "show_edit_form": request.method == "POST" or request.GET.get("edit") == "1",
+        "profile_errors": profile_errors,
     })
 
 @require_GET

@@ -17,6 +17,7 @@ doctor1 = Doctor.objects.create_user(
     first_name="John",
     last_name="Smith",
     middle_initial="A",
+    email="john.smith@example.com",
     organization_name="PPST Clinic",
     office_name="Main Office",
     medical_license_number="LIC1001",

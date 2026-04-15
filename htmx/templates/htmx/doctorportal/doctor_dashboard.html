@@ -8,6 +8,68 @@
     <title>PPST Home</title>
 
     <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
+
+    <style>
+        .results-table-wrapper { overflow-x: auto; }
+
+        .results-table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .results-table th, .results-table td {
+            padding: .5rem .75rem;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        .results-table th {
+            background: #f5f5f5;
+            white-space: nowrap;
+        }
+
+        .results-table th:nth-child(1),
+        .results-table td:nth-child(1) {
+            width: 70px;
+        }
+
+        .results-table th:nth-child(2),
+        .results-table td:nth-child(2) {
+            width: 70px;
+        }
+
+        .results-table th:nth-child(6),
+        .results-table td:nth-child(6) {
+            width: 170px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            font-size: .85rem;
+        }
+
+        .status-badge {
+            padding: .15rem .55rem;
+            border-radius: 99px;
+            font-size: .75rem;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-active { background: #d1ecf1; color: #0c5460; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-expired { background: #f8d7da; color: #721c24; }
+
+        .previous-login-note {
+            margin-bottom: 12px;
+        }
+    </style>
 </head>
 
 <body class="page">
@@ -42,16 +104,101 @@
 
         <article class="portal-card">
             <h2>Tests Completed Since Last Login</h2>
-            <ul class="created-tests-list">
-                <li>X test completed since XX/XX/XXXX at XX:XX am/pm</li>
-            </ul>
+            <p class="previous-login-note">
+                Previous login:
+                {% if previous_login_at %}
+                    {{ previous_login_at|date:"m/d/Y h:i A" }}
+                {% else %}
+                    First login
+                {% endif %}
+            </p>
+
+            <div class="results-table-wrapper">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Age</th>
+                            <th>Sent To</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if completed_tests %}
+                            {% for test in completed_tests %}
+                                <tr>
+                                    <td>{{ test.id }}</td>
+                                    <td>{{ test.test_taker_age }}</td>
+                                    <td>{{ test.patient_email|default:"—" }}</td>
+                                    <td>{{ test.created_at|date:"m/d/Y g:i A" }}</td>
+                                    <td>{{ test.expiration_date|date:"m/d/Y g:i A" }}</td>
+                                    <td><span class="status-badge status-{{ test.status }}">{{ test.status }}</span></td>
+                                    <td>
+                                        {% if test.status == "pending" or test.status == "active" %}
+                                        <button class="btn"
+                                            onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/htmx/take_test/{{ test.token }}/', this)">
+                                            Copy
+                                        </button>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7">No tests completed since last login</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </article>
 
         <article class="portal-card">
             <h2>Tests in Progress</h2>
-            <ul class="created-tests-list">
-                <li>X test(s) in progress, Started but not completed</li>
-            </ul>
+            <div class="results-table-wrapper">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Age</th>
+                            <th>Sent To</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if in_progress_tests %}
+                            {% for test in in_progress_tests %}
+                                <tr>
+                                    <td>{{ test.id }}</td>
+                                    <td>{{ test.test_taker_age }}</td>
+                                    <td>{{ test.patient_email|default:"—" }}</td>
+                                    <td>{{ test.created_at|date:"m/d/Y g:i A" }}</td>
+                                    <td>{{ test.expiration_date|date:"m/d/Y g:i A" }}</td>
+                                    <td><span class="status-badge status-{{ test.status }}">{{ test.status }}</span></td>
+                                    <td>
+                                        {% if test.status == "pending" or test.status == "active" %}
+                                        <button class="btn"
+                                            onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/htmx/take_test/{{ test.token }}/', this)">
+                                            Copy
+                                        </button>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7">No tests in progress</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </article>
 
         <article class="portal-card">
@@ -61,18 +208,66 @@
 
         <article class="portal-card">
             <h2>Tests Expiring Soon</h2>
-            <ul class="created-tests-list">
-                <li>X test(s) expire within 48 hours</li>
-            </ul>
+            <div class="results-table-wrapper">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Age</th>
+                            <th>Sent To</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if expiring_soon %}
+                            {% for test in expiring_soon %}
+                                <tr>
+                                    <td>{{ test.id }}</td>
+                                    <td>{{ test.test_taker_age }}</td>
+                                    <td>{{ test.patient_email|default:"—" }}</td>
+                                    <td>{{ test.created_at|date:"m/d/Y g:i A" }}</td>
+                                    <td>{{ test.expiration_date|date:"m/d/Y g:i A" }}</td>
+                                    <td><span class="status-badge status-{{ test.status }}">{{ test.status }}</span></td>
+                                    <td>
+                                        {% if test.status == "pending" or test.status == "active" %}
+                                        <button class="btn"
+                                            onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/htmx/take_test/{{ test.token }}/', this)">
+                                            Copy
+                                        </button>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7">No tests expiring within 48 hours</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </article>
 
         <article class="portal-card">
             <h2>Updates</h2>
             <p>
-                !!Website Maintenance Notice!! <br>The PPST website will be undergoing maintenance on XX/XX/XXXX from XX:XX am/pm to XX:XX am/pm. <br>During this time, the website may be unavailable. We apologize for any inconvenience and thank you for your understanding.
+                <strong>Website Maintenance Notice</strong> <br>The PPST website will be undergoing maintenance on 05/14/2026 from 11:00 pm to 05/15/2026 at 1:00 am. <br>During this time, the website may be unavailable. We apologize for any inconvenience and thank you for your understanding.
             </p>
         </article>
     </main>
+
+<script>
+function copyText(text, btn) {
+    navigator.clipboard.writeText(text);
+
+    const old = btn.innerText;
+    btn.innerText = "Copied!";
+    setTimeout(() => btn.innerText = old, 1500);
+}
+</script>
 
 </body>
 
