@@ -31,7 +31,14 @@
         <!-- PAGE TITLE -->
         <h1 class="results-page-title">Test Results For Test {{ test.id }}</h1>
         <p class="results-page-subtitle">Test ID: #{{ test.id }}</p>
-        <p class="results-page-subtitle">Completed: {{ test.completed_date|default:"--" }}</p>
+        <p class="results-page-subtitle">    Completed: 
+    {% if test.completed_date %}
+        {{ test.completed_date }}
+    {% else %}
+        --
+    {% endif %}</p>
+        <p class="results-page-subtitle">Created: {{ test.created_at |default:"--" }}</p>
+
 
         <!-- EXPORT CSV BUTTON -->
         <form action="{% url 'htmx:doctor_test_result_csv' test.id %}" method="get">

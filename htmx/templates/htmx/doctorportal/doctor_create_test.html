@@ -6,241 +6,315 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Test</title>
+
     <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
+
     <style>
-        .form-error   { color: #c0392b; font-size: .85rem; margin-top: .25rem; }
-        .copy-row     { display: flex; gap: .5rem; align-items: center; margin-top: .5rem; }
-        .copy-row input[type="text"] {
-            flex: 1; padding: .45rem .6rem; border: 1px solid #ccc;
-            border-radius: 4px; font-size: .9rem; background: #f9f9f9;
+        .form-error { color: #c0392b; font-size: .85rem; margin-top: .25rem; }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
         }
-        .copied-flash { font-size: .8rem; color: green; display: none; margin-left: .25rem; }
-        .modal-detail { margin: .35rem 0; font-size: .95rem; }
+
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 420px;
+            max-width: 90%;
+        }
+
+        .copy-row {
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            margin-top: .5rem;
+        }
+
+        .copy-row input {
+            flex: 1;
+            padding: .45rem .6rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .copied-flash { display: none; color: green; font-size: .8rem; }
+
         #generate-btn:disabled { opacity: .6; cursor: not-allowed; }
-        .results-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+
+        /* TABLE */
+        .results-table-wrapper { overflow-x: auto; }
+
+        .results-table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
         .results-table th, .results-table td {
-            padding: .5rem .75rem; border-bottom: 1px solid #e0e0e0; text-align: left;
+            padding: .5rem .75rem;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+            word-break: break-word;
         }
-        .results-table th { font-weight: 600; background: #f5f5f5; }
+
+        .results-table th {
+            background: #f5f5f5;
+            white-space: nowrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            font-size: .85rem;
+        }
+
         .status-badge {
-            display: inline-block; padding: .15rem .55rem; border-radius: 99px;
-            font-size: .78rem; font-weight: 600; text-transform: uppercase;
+            padding: .15rem .55rem;
+            border-radius: 99px;
+            font-size: .75rem;
+            text-transform: uppercase;
         }
-        .status-pending   { background: #fff3cd; color: #856404; }
-        .status-active    { background: #d1ecf1; color: #0c5460; }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-active { background: #d1ecf1; color: #0c5460; }
         .status-completed { background: #d4edda; color: #155724; }
-        .status-expired   { background: #f8d7da; color: #721c24; }
+        .status-expired { background: #f8d7da; color: #721c24; }
+
+        .create-test-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
 <body class="page create-test-page">
 
-    <header class="navbar">
-        <div class="nav-left">
-            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
-        </div>
-        <nav class="nav-right">
-            <a href="{% url 'htmx:doctor_dashboard' %}">Dashboard</a>
-            <a href="{% url 'htmx:doctor_create_test' %}" class="nav-active">Create Test</a>
-            <a href="{% url 'htmx:doctor_test_results' %}">Results</a>
-            <a href="{% url 'htmx:doctor_settings' %}">Settings</a>
-            <a href="{% url 'htmx:doctor_support' %}">Support</a>
-            <a href="{% url 'htmx:doctor_logout' %}">Logout</a>
-        </nav>
-    </header>
-
-    <main class="main-content">
-        <section class="create-test-layout">
-
-            <article class="portal-card">
-                <h2>Security Reminder</h2>
-                <p>
-                    For security and session accuracy, send the test link to the testing
-                    device only when the patient is ready to start the assessment.
-                    Each link is single-use and expires after the selected period.
-                </p>
-            </article>
-
-            <article class="portal-card">
-                <h2>New Patient Test</h2>
-                <div class="create-test-form">
-                    <div class="form-group">
-                        <label for="patient_age">Age of Patient <span class="required-asterisk">*</span></label>
-                        <input type="number" id="patient_age" min="1" max="120" required>
-                        <div class="form-error" id="err-age"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="device_email">Test Device Email <span class="required-asterisk">*</span></label>
-                        <input type="email" id="device_email" placeholder="device@example.com" required>
-                        <div class="form-error" id="err-email"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="expiration_hours">Link Expires After</label>
-                        <select id="expiration_hours">
-                            <option value="24">24 hours</option>
-                            <option value="48" selected>48 hours (default)</option>
-                            <option value="72">72 hours</option>
-                            <option value="168">1 week</option>
-                        </select>
-                    </div>
-                    <button type="button" class="btn" id="generate-btn">Generate Link</button>
-                </div>
-            </article>
-
-            <article class="portal-card">
-                <h2>Recently Created Tests</h2>
-                {% if recent_tests %}
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>Test ID</th>
-                            <th>Age</th>
-                            <th>Sent To</th>
-                            <th>Created</th>
-                            <th>Expires</th>
-                            <th>Status</th>
-                            <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for t in recent_tests %}
-                        <tr>
-                            <td>{{ t.id }}</td>
-                            <td>{{ t.test_taker_age }}</td>
-                            <td>{{ t.patient_email|default:"—" }}</td>
-                            <td>{{ t.created_at|date:"m/d/Y g:i A" }}</td>
-                            <td>{{ t.expiration_date|date:"m/d/Y g:i A" }}</td>
-                            <td><span class="status-badge status-{{ t.status }}">{{ t.status }}</span></td>
-                            <td>
-                                {% if t.status == "pending" or t.status == "active" %}
-                                <button class="btn" style="padding:.2rem .6rem;font-size:.8rem;"
-                                    onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/htmx/take_test/{{ t.token }}/', this)">
-                                    Copy
-                                </button>
-                                {% else %}—{% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <ul class="created-tests-list"><li>No tests created yet.</li></ul>
-                {% endif %}
-            </article>
-
-        </section>
-    </main>
-
-    <!-- MODAL -->
-    <div id="test-modal-overlay" class="modal-overlay" hidden>
-        <div class="modal-box">
-            <h2>&#10003; Test Created</h2>
-            <p class="modal-detail"><strong>Test ID:</strong> <span id="modal-test-id"></span></p>
-            <p class="modal-detail"><strong>Patient age:</strong> <span id="modal-age"></span></p>
-            <p class="modal-detail"><strong>Sent to:</strong> <span id="modal-email"></span></p>
-            <p class="modal-detail"><strong>Expires:</strong> <span id="modal-expires"></span></p>
-            <p class="modal-detail" style="margin-top:1rem;"><strong>Patient test link:</strong></p>
-            <div class="copy-row">
-                <input type="text" id="modal-link" readonly>
-                <button class="btn" onclick="copyModalLink()">Copy</button>
-                <span class="copied-flash" id="copied-flash">Copied!</span>
-            </div>
-            <p style="font-size:.85rem;color:#666;margin-top:1rem;">
-                Share this link with the patient's testing device. The link is single-use
-                and will expire at the time shown above.
-            </p>
-            <button class="btn modal-close-btn" onclick="closeTestModal()" style="margin-top:1.25rem;">Close</button>
-        </div>
+<header class="navbar">
+    <div class="nav-left">
+        <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
     </div>
+    <nav class="nav-right">
+        <a href="{% url 'htmx:doctor_dashboard' %}">Dashboard</a>
+        <a href="{% url 'htmx:doctor_create_test' %}" class="nav-active">Create Test</a>
+        <a href="{% url 'htmx:doctor_test_results' %}">Results</a>
+        <a href="{% url 'htmx:doctor_settings' %}">Settings</a>
+        <a href="{% url 'htmx:doctor_support' %}">Support</a>
+        <a href="{% url 'htmx:doctor_logout' %}">Logout</a>
+    </nav>
+</header>
 
-    <script>
-        const CSRF         = "{{ csrf_token }}";
-        const GENERATE_URL = "{% url 'htmx:generate_test_link' %}";
+<main class="main-content">
 
-        document.getElementById('generate-btn').addEventListener('click', generateLink);
+<h1 class="create-test-title">Create a Test</h1>
 
-        async function generateLink() {
-            document.getElementById('err-age').textContent   = '';
-            document.getElementById('err-email').textContent = '';
+<section class="create-test-layout">
 
-            const age   = document.getElementById('patient_age').value.trim();
-            const email = document.getElementById('device_email').value.trim();
-            const exp   = document.getElementById('expiration_hours').value;
+<!-- SECURITY REMINDER (KEPT AS REQUESTED) -->
+<article class="portal-card">
+    <h2>Security Reminder</h2>
+    <p>
+        For security and session accuracy, send the test link to the testing
+        device only when the patient is ready to start the assessment.
+        Each link is single-use and expires after the selected period.
+    </p>
+</article>
 
-            let hasError = false;
-            if (!age || isNaN(age) || +age < 1 || +age > 120) {
-                document.getElementById('err-age').textContent = 'Please enter a valid age (1–120).';
-                hasError = true;
-            }
-            if (!email) {
-                document.getElementById('err-email').textContent = 'Please enter a device email.';
-                hasError = true;
-            }
-            if (hasError) return;
+<!-- FORM -->
+<article class="portal-card">
+    <h2>New Patient Test</h2>
 
-            const btn = document.getElementById('generate-btn');
-            btn.disabled = true;
-            btn.textContent = 'Generating…';
+    <div class="create-test-form">
+        <div class="form-group">
+            <label>Age of Patient *</label>
+            <input type="number" id="patient_age" min="1" max="120">
+            <div class="form-error" id="err-age"></div>
+        </div>
 
-            try {
-                const resp = await fetch(GENERATE_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': CSRF,
-                    },
-                    body: new URLSearchParams({ patient_age: age, device_email: email, expiration_hours: exp }),
-                });
+        <div class="form-group">
+            <label>Device Email *</label>
+            <input type="email" id="device_email">
+            <div class="form-error" id="err-email"></div>
+        </div>
 
-                const data = await resp.json();
+        <div class="form-group">
+            <label>Expiration</label>
+            <select id="expiration_hours">
+                <option value="24">24 hours</option>
+                <option value="48" selected>48 hours</option>
+                <option value="72">72 hours</option>
+                <option value="168">1 week</option>
+            </select>
+        </div>
 
-                if (!data.success) {
-                    if (data.errors?.patient_age)  document.getElementById('err-age').textContent   = data.errors.patient_age;
-                    if (data.errors?.device_email) document.getElementById('err-email').textContent = data.errors.device_email;
-                    return;
-                }
+        <button class="btn" id="generate-btn">Generate Link</button>
+    </div>
+</article>
 
-                document.getElementById('modal-test-id').textContent = data.test_id;
-                document.getElementById('modal-age').textContent      = age;
-                document.getElementById('modal-email').textContent    = data.sent_to;
-                document.getElementById('modal-expires').textContent  = data.expires;
-                document.getElementById('modal-link').value           = data.link;
-                document.getElementById('test-modal-overlay').removeAttribute('hidden');
+<!-- RECENT TESTS -->
+<article class="portal-card">
+    <h2>Recently Created Tests</h2>
 
-                document.getElementById('patient_age').value  = '';
-                document.getElementById('device_email').value = '';
-                window._shouldRefresh = true;
-            } catch (err) {
-                alert('An unexpected error occurred. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Generate Link';
-            }
-        }
+    <div class="results-table-wrapper">
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Test ID</th>
+                <th>Age</th>
+                <th>Sent To</th>
+                <th>Created</th>
+                <th>Expires</th>
+                <th>Status</th>
+                <th>Link</th>
+            </tr>
+        </thead>
 
-        function closeTestModal() {
-            document.getElementById('test-modal-overlay').setAttribute('hidden', '');
-            if (window._shouldRefresh) { window._shouldRefresh = false; location.reload(); }
-        }
+        <tbody id="tests-body">
+        {% for t in recent_tests %}
+            <tr id="row-{{ t.id }}">
+                <td>{{ t.id }}</td>
+                <td>{{ t.test_taker_age }}</td>
+                <td>{{ t.patient_email|default:"—" }}</td>
+                <td>{{ t.created_at|date:"m/d/Y g:i A" }}</td>
+                <td>{{ t.expiration_date|date:"m/d/Y g:i A" }}</td>
+                <td><span class="status-badge status-{{ t.status }}">{{ t.status }}</span></td>
+                <td>
+                    {% if t.status == "pending" or t.status == "active" %}
+                    <button class="btn"
+                        onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/htmx/take_test/{{ t.token }}/', this)">
+                        Copy
+                    </button>
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</article>
 
-        function copyModalLink() {
-            const input = document.getElementById('modal-link');
-            input.select();
-            navigator.clipboard.writeText(input.value).then(() => {
-                const f = document.getElementById('copied-flash');
-                f.style.display = 'inline';
-                setTimeout(() => f.style.display = 'none', 2000);
-            });
-        }
+</section>
+</main>
 
-        function copyText(url, btn) {
-            navigator.clipboard.writeText(url).then(() => {
-                const orig = btn.textContent;
-                btn.textContent = 'Copied!';
-                setTimeout(() => btn.textContent = orig, 2000);
-            });
-        }
-    </script>
+<!-- MODAL -->
+<div id="test-modal" class="modal-overlay" hidden>
+    <div class="modal-box">
+        <h2>✓ Test Created</h2>
+
+        <p><b>ID:</b> <span id="m-id"></span></p>
+        <p><b>Age:</b> <span id="m-age"></span></p>
+        <p><b>Email:</b> <span id="m-email"></span></p>
+        <p><b>Expires:</b> <span id="m-exp"></span></p>
+
+        <div class="copy-row">
+            <input id="m-link" readonly>
+            <button class="btn" onclick="copyModal()">Copy</button>
+            <span id="copied" class="copied-flash">Copied!</span>
+        </div>
+
+        <button class="btn" onclick="closeModal()" style="margin-top:10px;">Close</button>
+    </div>
+</div>
+
+<script>
+const CSRF = "{{ csrf_token }}";
+const URL = "{% url 'htmx:generate_test_link' %}";
+
+document.getElementById("generate-btn").addEventListener("click", async () => {
+
+    const age = document.getElementById("patient_age").value;
+    const email = document.getElementById("device_email").value;
+    const exp = document.getElementById("expiration_hours").value;
+
+    document.getElementById("err-age").innerText = "";
+    document.getElementById("err-email").innerText = "";
+
+    if (!age || age < 1 || age > 120) {
+        document.getElementById("err-age").innerText = "Invalid age";
+        return;
+    }
+
+    if (!email.includes("@")) {
+        document.getElementById("err-email").innerText = "Invalid email";
+        return;
+    }
+
+    const resp = await fetch(URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": CSRF
+        },
+        body: new URLSearchParams({
+            patient_age: age,
+            device_email: email,
+            expiration_hours: exp
+        })
+    });
+
+    const data = await resp.json();
+    if (!data.success) return;
+
+    // ===== POPUP =====
+    document.getElementById("m-id").innerText = data.test_id;
+    document.getElementById("m-age").innerText = age;
+    document.getElementById("m-email").innerText = data.sent_to;
+    document.getElementById("m-exp").innerText = data.expires;
+    document.getElementById("m-link").value = data.link;
+
+    document.getElementById("test-modal").hidden = false;
+
+    // ===== AUTO REFRESH TABLE =====
+    const tbody = document.getElementById("tests-body");
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${data.test_id}</td>
+        <td>${age}</td>
+        <td>${data.sent_to}</td>
+        <td>Just now</td>
+        <td>${data.expires}</td>
+        <td><span class="status-badge status-pending">pending</span></td>
+        <td><button class="btn" onclick="copyText('${data.link}', this)">Copy</button></td>
+    `;
+
+    tbody.prepend(row);
+
+    document.getElementById("patient_age").value = "";
+    document.getElementById("device_email").value = "";
+});
+
+function closeModal() {
+    document.getElementById("test-modal").hidden = true;
+}
+
+function copyModal() {
+    const input = document.getElementById("m-link");
+    navigator.clipboard.writeText(input.value);
+
+    const flash = document.getElementById("copied");
+    flash.style.display = "inline";
+    setTimeout(() => flash.style.display = "none", 1500);
+}
+
+function copyText(text, btn) {
+    navigator.clipboard.writeText(text);
+
+    const old = btn.innerText;
+    btn.innerText = "Copied!";
+    setTimeout(() => btn.innerText = old, 1500);
+}
+</script>
 
 </body>
 </html>

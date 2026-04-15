@@ -59,22 +59,7 @@
                 <a href="" class="btn">Update Profile</a>
             </article>
 
-            <article class="portal-card">
-                <h2>New Patient Test</h2>
-                <form method="post" action="#" class="create-test-form">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="patient_age">Age of Patient <span class="required-asterisk">*</span></label>
-                        <input type="number" id="patient_age" name="patient_age" min="1" max="120" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="device_email">Test Device Email <span class="required-asterisk">*</span></label>
-                        <input type="email" id="device_email" name="device_email" placeholder="device@example.com"
-                            required>
-                    </div>
-                    <button type="button" class="btn" id="generate-btn" onclick="showTestModal()">Generate Link</button>
-                </form>
-            </article>
+            
         </section>
 
     </main>

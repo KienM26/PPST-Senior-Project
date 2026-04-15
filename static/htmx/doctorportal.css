@@ -258,9 +258,28 @@ body.login-page .main-content {
 /* CREATE TEST PAGE */
 .create-test-layout {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 0.85fr 1.6fr;
+    grid-template-rows: auto auto;
     gap: 24px;
     align-items: start;
+}
+
+/* LEFT TOP: Security Reminder */
+.create-test-layout article:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+/* LEFT BOTTOM: New Patient Test */
+.create-test-layout article:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+/* RIGHT SIDE: Recently Created Tests */
+.create-test-layout article:nth-child(3) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
 }
 
 .settings-layout {
@@ -375,6 +394,23 @@ body.login-page .main-content {
 /* =========================
    TEST RESULTS PAGE
 ========================= */
+
+.results-filter-box {
+    margin-bottom: 12px;
+}
+
+#testFilter {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+#testFilter:focus {
+    border-color: #0f9db7;
+}
 
 .results-page-shell {
     width: 100%;

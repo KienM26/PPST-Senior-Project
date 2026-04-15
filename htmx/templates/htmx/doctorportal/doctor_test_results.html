@@ -32,6 +32,11 @@
             <h1 class="results-page-title">Test Results</h1>
             <p class="results-page-subtitle">View Test Results For Your Patients</p>
 
+            <h2 class="section-heading">Search</h2>
+            <div class="results-filter-box">
+    <input type="text" id="testFilter" placeholder="Search Test ID, status, date..." />
+</div>
+
             <!-- TEST RESULTS -->
             <section class="results-section">
                 <h2 class="section-heading">Test Results</h2>
@@ -269,6 +274,18 @@
             }
         });
     </script>
+
+    <script>
+document.getElementById("testFilter").addEventListener("input", function () {
+    const value = this.value.toLowerCase();
+    const rows = document.querySelectorAll(".results-table tbody tr");
+
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(value) ? "" : "none";
+    });
+});
+</script>
 
 </body>
 </html>

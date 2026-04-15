@@ -729,8 +729,8 @@ def generate_test_link(request):
         "token": str(token),
         "link": test_url,
         "sent_to": device_email,
-        "expires": expiration_dt.strftime("%m/%d/%Y at %I:%M %p UTC"),
-        "created_at": test.created_at.strftime("%m/%d/%Y at %I:%M %p") if test.created_at else "",
+        "expires": timezone.localtime(expiration_dt).strftime("%m/%d/%Y at %I:%M %p"),
+        "created_at": timezone.localtime(test.created_at).strftime("%m/%d/%Y at %I:%M %p") if test.created_at else "",
     })
 
 
@@ -801,7 +801,6 @@ def doctor_settings(request):
         "user": request.user
     })
 
-@login_required
 @require_GET
 def doctor_support(request):
     return render(request, 'htmx/doctorportal/doctor_support.html', {})
@@ -1700,8 +1699,8 @@ def doctor_test_result_csv(request, test_id):
     writer.writerow(['Test Information'])
     writer.writerow(['Test ID', test.id])
     writer.writerow(['Status', test.get_status_display()])
-    writer.writerow(['Created At', test.created_at.strftime('%m/%d/%Y %H:%M') if test.created_at else '--'])
-    writer.writerow(['Expiration Date', test.expiration_date.strftime('%m/%d/%Y %H:%M') if test.expiration_date else '--'])
+    writer.writerow(['Created At', timezone.localtime(test.created_at).strftime('%m/%d/%Y %I:%M %p') if test.created_at else '--'])
+    writer.writerow(['Expiration Date', timezone.localtime(test.expiration_date).strftime('%m/%d/%Y %I:%M %p') if test.expiration_date else '--'])
     writer.writerow(['Test Taker Age', test.test_taker_age])
     writer.writerow(['Age Group', age_label])
     writer.writerow(['Independent', 'Yes' if test.is_independent else 'No'])
