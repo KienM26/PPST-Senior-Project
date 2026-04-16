@@ -24,24 +24,51 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 import re
 
-DIGIT_STIMULI_DATA = [
-    {"key": "digit_stimuli_1", "sequence": "37K2M", "correct_answer": "237"},
-    {"key": "digit_stimuli_2", "sequence": "49L1P", "correct_answer": "149"},
-    {"key": "digit_stimuli_3", "sequence": "82Q5R", "correct_answer": "258"},
-    {"key": "digit_stimuli_4", "sequence": "61S4T", "correct_answer": "146"},
-    {"key": "digit_stimuli_5", "sequence": "93U2V", "correct_answer": "239"},
-    {"key": "digit_stimuli_6", "sequence": "51W8X", "correct_answer": "158"},
+FOUR_SPAN_DIGIT_POOL = [
+    {"sequence": "1478", "correct_answer": "1478", "stimulus_type": "digit", "span_length": 4},
+    {"sequence": "9356", "correct_answer": "3569", "stimulus_type": "digit", "span_length": 4},
+    {"sequence": "9732", "correct_answer": "2379", "stimulus_type": "digit", "span_length": 4},
 ]
 
-MIXED_STIMULI_DATA = [
-    {"key": "mixed_stimuli_1", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_2", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_3", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_4", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_5", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_6", "sequence": "37K2M", "correct_answer": "237KM"},
+FIVE_SPAN_DIGIT_POOL = [
+    {"sequence": "35486", "correct_answer": "34568", "stimulus_type": "digit", "span_length": 5},
+    {"sequence": "40973", "correct_answer": "03479", "stimulus_type": "digit", "span_length": 5},
+    {"sequence": "14982", "correct_answer": "12489", "stimulus_type": "digit", "span_length": 5},
 ]
 
+FOUR_SPAN_MIXED_POOL = [
+    {"sequence": "A2L6", "correct_answer": "26AL", "stimulus_type": "mixed", "span_length": 4},
+    {"sequence": "7LU5", "correct_answer": "57LU", "stimulus_type": "mixed", "span_length": 4},
+    {"sequence": "F82I", "correct_answer": "28FI", "stimulus_type": "mixed", "span_length": 4},
+]
+
+FIVE_SPAN_MIXED_POOL = [
+    {"sequence": "UC86F", "correct_answer": "68CFU", "stimulus_type": "mixed", "span_length": 5},
+    {"sequence": "5KI76", "correct_answer": "567IK", "stimulus_type": "mixed", "span_length": 5},
+    {"sequence": "2L48K", "correct_answer": "248KL", "stimulus_type": "mixed", "span_length": 5},
+]
+
+
+def build_full_test_stimuli():
+    selected_4_digit = random.sample(FOUR_SPAN_DIGIT_POOL, 3)
+    selected_5_digit = random.sample(FIVE_SPAN_DIGIT_POOL, 3)
+    selected_4_mixed = random.sample(FOUR_SPAN_MIXED_POOL, 3)
+    selected_5_mixed = random.sample(FIVE_SPAN_MIXED_POOL, 3)
+
+    return [
+        {"key": "digit_stimuli_1", **selected_4_digit[0]},
+        {"key": "digit_stimuli_2", **selected_4_digit[1]},
+        {"key": "digit_stimuli_3", **selected_4_digit[2]},
+        {"key": "digit_stimuli_4", **selected_5_digit[0]},
+        {"key": "digit_stimuli_5", **selected_5_digit[1]},
+        {"key": "digit_stimuli_6", **selected_5_digit[2]},
+        {"key": "mixed_stimuli_1", **selected_4_mixed[0]},
+        {"key": "mixed_stimuli_2", **selected_4_mixed[1]},
+        {"key": "mixed_stimuli_3", **selected_4_mixed[2]},
+        {"key": "mixed_stimuli_4", **selected_5_mixed[0]},
+        {"key": "mixed_stimuli_5", **selected_5_mixed[1]},
+        {"key": "mixed_stimuli_6", **selected_5_mixed[2]},
+    ]
 
 ACCESSIBILITY_THEMES = {
     "teal": {
@@ -278,6 +305,31 @@ TEST_COMPLETION_TEXT = {
     }
 }
 
+PRACTICE_DIGIT_4_SPAN_POOL = [
+    {
+        "sequence": "1478",
+        "correct_answer": "1478",
+        "stimulus_type": "digit",
+        "span_length": 4,
+    },
+    {
+        "sequence": "9356",
+        "correct_answer": "3569",
+        "stimulus_type": "digit",
+        "span_length": 4,
+    },
+    {
+        "sequence": "9732",
+        "correct_answer": "2379",
+        "stimulus_type": "digit",
+        "span_length": 4,
+    },
+]
+
+
+def build_practice_digit_pool():
+    return random.sample(PRACTICE_DIGIT_4_SPAN_POOL, k=len(PRACTICE_DIGIT_4_SPAN_POOL))
+
 def get_current_lang(request):
     lang = request.session.get("lang", "en")
     if lang not in PRACTICE_TEXT:
@@ -358,32 +410,16 @@ def practice_test_page(request):
 @require_POST
 def start_practice_test(request):
     request.session["practice_test_started"] = True
+    request.session["practice_digit_pool"] = build_practice_digit_pool()
     return redirect("htmx:practiceDigitStimuli1")
 
 
 @require_POST
 def start_digit_test(request):
-    # If a token-based test was already set up by take_test, reuse it.
-    existing_test_id = request.session.get("current_test_id")
-    existing_stimulus_ids = request.session.get("current_test_stimulus_ids")
+    for key in ("current_test_id", "current_test_type", "current_test_stimulus_ids", "test_started_at"):
+        request.session.pop(key, None)
 
-    if existing_test_id and existing_stimulus_ids:
-        # Verify the test exists and is still active
-        try:
-            test = Test.objects.get(id=existing_test_id, status="active")
-            request.session["test_started_at"] = timezone.now().isoformat()
-            # Session already has stimulus IDs from take_test — just proceed.
-            request.session["current_test_type"] = "full"
-            return redirect("htmx:digitStimuli1")
-        except Test.DoesNotExist:
-            pass  # Fall through to create a new test if the existing one is gone
-
-    # No existing test session — create a fresh standalone test.
-    combined_stimuli = [
-        {**stimulus, "stimulus_type": "digit"} for stimulus in DIGIT_STIMULI_DATA
-    ] + [
-        {**stimulus, "stimulus_type": "mixed"} for stimulus in MIXED_STIMULI_DATA
-    ]
+    full_stimuli = build_full_test_stimuli()
 
     test = Test.objects.create(
         doctor=request.user if request.user.is_authenticated else None,
@@ -395,26 +431,27 @@ def start_digit_test(request):
     request.session["test_started_at"] = timezone.now().isoformat()
 
     stimulus_ids = {}
-    for stimulus in combined_stimuli:
+    for stimulus in full_stimuli:
         created = Stimulus.objects.create(
             test=test,
             stimulus_string=stimulus["sequence"],
             correct_answer=stimulus["correct_answer"],
             stimulus_type=stimulus["stimulus_type"],
-            span_length=len(stimulus["sequence"]),
+            span_length=stimulus["span_length"],
         )
         stimulus_ids[stimulus["key"]] = created.id
 
     request.session["current_test_id"] = test.id
     request.session["current_test_type"] = "full"
     request.session["current_test_stimulus_ids"] = stimulus_ids
+
     return redirect("htmx:digitStimuli1")
 
 
 @require_POST
 def start_mixed_test(request):
     if not request.session.get("current_test_id"):
-        initialize_test_session(request, MIXED_STIMULI_DATA, "mixed")
+        return redirect("htmx:digitActualInstructions")
     return redirect("htmx:mixedStimuli1")
 
 
@@ -752,35 +789,32 @@ def take_test(request, token):
         test.status = "active"
         test.save(update_fields=["status"])
 
-    combined_stimuli = [
-        {**s, "stimulus_type": "digit"} for s in DIGIT_STIMULI_DATA
-    ] + [
-        {**s, "stimulus_type": "mixed"} for s in MIXED_STIMULI_DATA
-    ]
+    full_stimuli = build_full_test_stimuli()
 
     if not test.stimuli.exists():
-        for stimulus in combined_stimuli:
+        for stimulus in full_stimuli:
             Stimulus.objects.create(
                 test=test,
                 stimulus_string=stimulus["sequence"],
                 correct_answer=stimulus["correct_answer"],
                 stimulus_type=stimulus["stimulus_type"],
-                span_length=len(stimulus["sequence"]),
+                span_length=stimulus["span_length"],
             )
 
-    all_stimuli   = list(test.stimuli.all())
+    all_stimuli = list(test.stimuli.all())
     digit_stimuli = [s for s in all_stimuli if s.stimulus_type == "digit"]
     mixed_stimuli = [s for s in all_stimuli if s.stimulus_type == "mixed"]
+
     stimulus_ids_keyed = {}
     for i, s in enumerate(digit_stimuli, 1):
         stimulus_ids_keyed[f"digit_stimuli_{i}"] = s.id
     for i, s in enumerate(mixed_stimuli, 1):
         stimulus_ids_keyed[f"mixed_stimuli_{i}"] = s.id
 
-    request.session["current_test_id"]           = test.id
-    request.session["current_test_type"]          = "full"
-    request.session["current_test_stimulus_ids"]  = stimulus_ids_keyed
-    request.session["lang"]                       = "en"
+    request.session["current_test_id"] = test.id
+    request.session["current_test_type"] = "full"
+    request.session["current_test_stimulus_ids"] = stimulus_ids_keyed
+    request.session["lang"] = "en"
 
     return redirect("htmx:SelectLanguage")
 
@@ -918,65 +952,132 @@ def jsresponse(request):
 
 @require_GET
 def practice_digit_stimuli_1(request):
+    if not request.session.get("practice_test_started"):
+        return redirect("htmx:practiceTestPage")
+
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    practice_digit_pool = request.session.get("practice_digit_pool")
+    if not practice_digit_pool:
+        practice_digit_pool = build_practice_digit_pool()
+        request.session["practice_digit_pool"] = practice_digit_pool
+
+    stimulus = practice_digit_pool[0]
 
     return render(request, "htmx/practice_digit_stimuli_1.html", {
         "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "stimulus": stimulus,
     })
 
 
 @require_GET
 def practice_digit_stimuli_1_response(request):
+    if not request.session.get("practice_test_started"):
+        return redirect("htmx:practiceTestPage")
+
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    practice_digit_pool = request.session.get("practice_digit_pool")
+    if not practice_digit_pool:
+        practice_digit_pool = build_practice_digit_pool()
+        request.session["practice_digit_pool"] = practice_digit_pool
+
+    stimulus = practice_digit_pool[0]
 
     return render(request, "htmx/practice_digit_stimuli_1_response.html", {
         "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "stimulus": stimulus,
     })
+
 
 @require_GET
 def practice_digit_stimuli_2(request):
+    if not request.session.get("practice_test_started"):
+        return redirect("htmx:practiceTestPage")
+
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    practice_digit_pool = request.session.get("practice_digit_pool")
+    if not practice_digit_pool:
+        practice_digit_pool = build_practice_digit_pool()
+        request.session["practice_digit_pool"] = practice_digit_pool
+
+    stimulus = practice_digit_pool[1]
 
     return render(request, "htmx/practice_digit_stimuli_2.html", {
         "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "stimulus": stimulus,
     })
 
 
 @require_GET
 def practice_digit_stimuli_2_response(request):
+    if not request.session.get("practice_test_started"):
+        return redirect("htmx:practiceTestPage")
+
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    practice_digit_pool = request.session.get("practice_digit_pool")
+    if not practice_digit_pool:
+        practice_digit_pool = build_practice_digit_pool()
+        request.session["practice_digit_pool"] = practice_digit_pool
+
+    stimulus = practice_digit_pool[1]
 
     return render(request, "htmx/practice_digit_stimuli_2_response.html", {
         "lang": lang,
         "text": PRACTICE_DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "stimulus": stimulus,
     })
+
 
 @require_GET
 def digit_stimuli_1(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
+    stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+    stimulus_id = stimulus_ids.get("digit_stimuli_1")
+
+    if stimulus_id:
+        stimulus_obj = get_object_or_404(Stimulus, id=stimulus_id)
+        stimulus = {
+            "sequence": stimulus_obj.stimulus_string,
+            "correct_answer": stimulus_obj.correct_answer,
+            "stimulus_type": stimulus_obj.stimulus_type,
+            "span_length": stimulus_obj.span_length,
+        }
+    else:
+        stimulus = {
+            "sequence": "1478",
+            "correct_answer": "1478",
+            "stimulus_type": "digit",
+            "span_length": 4,
+        }
+
     return render(request, "htmx/digit_stimuli_1.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "stimulus": stimulus,
     })
+
 
 
 @require_GET
@@ -991,16 +1092,37 @@ def digit_stimuli_1_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def digit_stimuli_2(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+    stimulus_id = stimulus_ids.get("digit_stimuli_2")
+
+    if stimulus_id:
+        stimulus_obj = get_object_or_404(Stimulus, id=stimulus_id)
+        stimulus = {
+            "sequence": stimulus_obj.stimulus_string,
+            "correct_answer": stimulus_obj.correct_answer,
+            "stimulus_type": stimulus_obj.stimulus_type,
+            "span_length": stimulus_obj.span_length,
+        }
+    else:
+        stimulus = {
+            "sequence": "9356",
+            "correct_answer": "3569",
+            "stimulus_type": "digit",
+            "span_length": 4,
+        }
 
     return render(request, "htmx/digit_stimuli_2.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "stimulus": stimulus,
     })
 
 
@@ -1016,16 +1138,37 @@ def digit_stimuli_2_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def digit_stimuli_3(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+    stimulus_id = stimulus_ids.get("digit_stimuli_3")
+
+    if stimulus_id:
+        stimulus_obj = get_object_or_404(Stimulus, id=stimulus_id)
+        stimulus = {
+            "sequence": stimulus_obj.stimulus_string,
+            "correct_answer": stimulus_obj.correct_answer,
+            "stimulus_type": stimulus_obj.stimulus_type,
+            "span_length": stimulus_obj.span_length,
+        }
+    else:
+        stimulus = {
+            "sequence": "9732",
+            "correct_answer": "2379",
+            "stimulus_type": "digit",
+            "span_length": 4,
+        }
 
     return render(request, "htmx/digit_stimuli_3.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "stimulus": stimulus,
     })
 
 
@@ -1040,6 +1183,8 @@ def digit_stimuli_3_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
+
+
 
 @require_GET
 def digit_stimuli_4(request):
