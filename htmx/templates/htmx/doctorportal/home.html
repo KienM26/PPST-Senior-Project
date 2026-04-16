@@ -40,7 +40,15 @@
                 <img src="https://via.placeholder.com/400x250">
             </div>
         </section>
-
+    <!-- INDEPENDENT TEST BUTTON -->
+    <section class="hero-buttons">
+        <form method="post" action="{% url 'htmx:startIndependentTest' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-primary">
+                Try Independent Test
+            </button>
+        </form>
+    </section>
         <!-- IMAGES -->
         <section class="image-row">
             <div class="image-card small">

@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Independent Test Results</title>
+
+    <link rel="stylesheet" href="{% static 'htmx/external.css' %}">
+
+    <style>
+        :root {
+            --theme-color: {{ current_theme.header|default:"#0f9db7" }};
+            --button-color: {{ current_theme.button|default:"#0f9db7" }};
+        }
+
+        a.btn {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="page">
+
+    <header class="top-bar">
+        <div class="logo-wrap">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
+        </div>
+
+        <h1 class="title">Independent Test Results</h1>
+
+        <div class="lang-badge">
+            {{ lang_info.label }}
+            <img src="{% static lang_info.flag %}" alt="{{ lang_info.label }} flag">
+        </div>
+    </header>
+
+    <div class="gray-line"></div>
+
+    <main class="response-panel">
+        <div class="prompt-box">
+            Your test is complete.
+        </div>
+
+        <div class="prompt-box">
+            Correct Answers: {{ results.num_correct }}
+        </div>
+
+        <div class="prompt-box">
+            Incorrect Answers: {{ results.num_incorrect }}
+        </div>
+
+        <div class="prompt-box">
+            Accuracy: {{ results.accuracy }}%
+        </div>
+
+        <div class="prompt-box">
+            Your performance is most similar to a {{ results.age_group }} year old.
+        </div>
+
+        <div class="submit-wrap" style="margin-top: 30px;">
+            <form method="post" action="{% url 'htmx:startIndependentTest' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn">Take Test Again</button>
+            </form>
+        </div>
+
+        <div class="submit-wrap" style="margin-top: 15px;">
+            <a href="{% url 'htmx:home' %}" class="btn">Return Home</a>
+        </div>
+    </main>
+
+</body>
+</html>
