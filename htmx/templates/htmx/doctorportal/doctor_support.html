@@ -29,30 +29,167 @@
     </header>
 
 
+    <style>
+        .support-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #ddd5ce;
+            padding: 14px 0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            color: var(--doctor-text-brown);
+        }
+
+        .faq-answer {
+            font-size: 0.95rem;
+            color: var(--doctor-text-brown);
+            line-height: 1.6;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #ddd5ce;
+        }
+
+        .contact-row:last-child {
+            border-bottom: none;
+        }
+
+        .contact-label {
+            font-weight: 700;
+            min-width: 90px;
+            font-size: 0.95rem;
+        }
+
+        .contact-value {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .contact-value a {
+            color: #0f9db7;
+            text-decoration: none;
+        }
+
+        @media (max-width: 900px) {
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
     <!-- MAIN CONTENT -->
     <main class="main-content">
 
         <!-- HERO -->
         <section class="hero">
             <div class="hero-text">
-                <h1>The Philadelphia <br> Pointing Span Test</h1>
-            </div>
-
-            <div class="hero-image">
-                <img src="https://via.placeholder.com/400x250">
+                <h1>Support</h1>
+                <h2>Resources and contact information for clinicians</h2>
             </div>
         </section>
 
-        <!-- IMAGES -->
-        <section class="image-row">
-            <div class="image-card small">
-                <img src="https://via.placeholder.com/300x200">
+        <div class="support-grid">
+
+            <!-- FAQ -->
+            <article class="portal-card">
+                <h2>Frequently Asked Questions</h2>
+
+                <div class="faq-item">
+                    <p class="faq-question">How do I create a new test for a patient?</p>
+                    <p class="faq-answer">Navigate to <strong>Create Test</strong> in the top navigation bar. Fill in the patient's age and optionally their email address, then click <strong>Create</strong>. A unique test link will be generated that you can copy and send to the patient.</p>
+                </div>
+
+                <div class="faq-item">
+                    <p class="faq-question">How long is a test link valid?</p>
+                    <p class="faq-answer">Test links expire 72 hours after creation by default. Tests that have not been started will show a status of <strong>Pending</strong>; once the patient begins the test it becomes <strong>Active</strong>.</p>
+                </div>
+
+                <div class="faq-item">
+                    <p class="faq-question">Where can I view a patient's results?</p>
+                    <p class="faq-answer">Go to <strong>Results</strong> in the navigation bar. Find the test in the table and click <strong>View Results</strong>. Results are only available once the test status is <strong>Completed</strong>.</p>
+                </div>
+
+                <div class="faq-item">
+                    <p class="faq-question">Can I download results as a file?</p>
+                    <p class="faq-answer">Yes. On the individual test result page, use the <strong>Download CSV</strong> button to export the patient's results as a spreadsheet-compatible file.</p>
+                </div>
+
+                <div class="faq-item">
+                    <p class="faq-question">What does the "Tests Expiring Soon" section show?</p>
+                    <p class="faq-answer">The dashboard highlights any pending or active tests whose links will expire within the next 48 hours so you can follow up with patients in time.</p>
+                </div>
+
+                <div class="faq-item">
+                    <p class="faq-question">How do I update my account email or password?</p>
+                    <p class="faq-answer">Go to <strong>Settings</strong> in the navigation bar to manage your account information.</p>
+                </div>
+            </article>
+
+            <!-- RIGHT COLUMN -->
+            <div>
+                <!-- CONTACT -->
+                <article class="portal-card">
+                    <h2>Contact Us</h2>
+
+                    <div class="contact-row">
+                        <span class="contact-label">Email</span>
+                        <span class="contact-value"><a href="mailto:support@ppst.org">support@ppst.org</a></span>
+                    </div>
+
+                    <div class="contact-row">
+                        <span class="contact-label">Phone</span>
+                        <span class="contact-value">(215) 555-0192<br><small>Monday – Friday, 9:00 am – 5:00 pm ET</small></span>
+                    </div>
+
+                    <div class="contact-row">
+                        <span class="contact-label">Address</span>
+                        <span class="contact-value">
+                            Philadelphia Pointing Span Test Program<br>
+                            3400 Civic Center Blvd<br>
+                            Philadelphia, PA 19104
+                        </span>
+                    </div>
+                </article>
+
+                <!-- DOCUMENTATION -->
+                <article class="portal-card">
+                    <h2>Documentation &amp; Resources</h2>
+                    <p style="margin-bottom: 14px;">Reference materials for administering and interpreting the PPST.</p>
+
+                    <div class="faq-item">
+                        <p class="faq-question">Clinician Administration Guide</p>
+                        <p class="faq-answer">Step-by-step instructions for setting up and sending tests to patients.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <p class="faq-question">Scoring &amp; Interpretation Manual</p>
+                        <p class="faq-answer">Explains how accuracy, response time, and age-group comparisons are calculated.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <p class="faq-question">Patient Instructions Sheet</p>
+                        <p class="faq-answer">A printable one-page guide you can provide to patients before they take the test.</p>
+                    </div>
+                </article>
             </div>
 
-            <div class="image-card large">
-                <img src="https://via.placeholder.com/600x200">
-            </div>
-        </section>
+        </div>
 
     </main>
 

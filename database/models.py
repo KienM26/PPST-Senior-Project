@@ -136,6 +136,8 @@ class Results(models.Model):
         on_delete=models.CASCADE,
         related_name='results'
     )
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
    
     total_time = models.PositiveIntegerField()
     response_time = models.PositiveIntegerField()

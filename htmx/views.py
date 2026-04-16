@@ -12,12 +12,13 @@ from django.db.models import Avg
 
 from database.models import Latency, Response, Results, Stimulus, Test
 
-from datetime import date
+from datetime import date, timedelta
 import json
 
 from django.contrib.auth import authenticate, login, logout
 from database.models import Doctor
 from django.contrib.auth.decorators import login_required
+from django.utils.dateparse import parse_datetime
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -406,6 +407,23 @@ def practice_test_page(request):
         "current_theme": current_theme,
     })
 
+#start indepedent test
+@require_POST
+def start_independent_test(request):
+    # clear old independent/normal test session data
+    for key in (
+        "independent_test",
+        "independent_stimuli",
+        "independent_results",
+        "current_test_id",
+        "current_test_type",
+        "current_test_stimulus_ids",
+        "test_started_at",
+    ):
+        request.session.pop(key, None)
+
+    request.session["independent_test"] = True
+    return redirect("htmx:SelectLanguage")
 
 @require_POST
 def start_practice_test(request):
@@ -416,6 +434,25 @@ def start_practice_test(request):
 
 @require_POST
 def start_digit_test(request):
+    # independent test implementation
+    if request.session.get("independent_test"):
+        request.session["test_started_at"] = timezone.now().isoformat()
+        return redirect("htmx:digitStimuli1")
+
+    # if a token-based test was already set up by take_test, reuse it
+    existing_test_id = request.session.get("current_test_id")
+    existing_stimulus_ids = request.session.get("current_test_stimulus_ids")
+
+    if existing_test_id and existing_stimulus_ids:
+        try:
+            test = Test.objects.get(id=existing_test_id, status="active")
+            request.session["test_started_at"] = timezone.now().isoformat()
+            request.session["current_test_type"] = "full"
+            return redirect("htmx:digitStimuli1")
+        except Test.DoesNotExist:
+            pass
+
+    # otherwise clear stale test session data and make a fresh randomized test
     for key in ("current_test_id", "current_test_type", "current_test_stimulus_ids", "test_started_at"):
         request.session.pop(key, None)
 
@@ -446,7 +483,6 @@ def start_digit_test(request):
     request.session["current_test_stimulus_ids"] = stimulus_ids
 
     return redirect("htmx:digitStimuli1")
-
 
 @require_POST
 def start_mixed_test(request):
@@ -613,6 +649,11 @@ def doctor_login(request):
                     "error": "Account not approved yet"
                 })
 
+            # Capture the prior login timestamp before Django updates last_login.
+            request.session["previous_login_at"] = (
+                user.last_login.isoformat() if user.last_login else ""
+            )
+
             login(request, user)
             return redirect("htmx:doctor_dashboard")
 
@@ -703,8 +744,32 @@ def doctor_create_account(request):
 @login_required
 @require_GET
 def doctor_dashboard(request):
+    now = timezone.now()
+    previous_login_raw = request.session.get("previous_login_at", "")
+    previous_login_at = parse_datetime(previous_login_raw) if previous_login_raw else None
+
+    tests = Test.objects.filter(doctor=request.user).select_related("results")
+
+    completed_tests = tests.filter(status="completed", results__isnull=False)
+    if previous_login_at:
+        completed_tests = completed_tests.filter(results__created_at__gte=previous_login_at)
+    else:
+        completed_tests = completed_tests.none()
+
+    in_progress_tests = tests.filter(status="active")
+
+    expiring_soon = tests.filter(
+        expiration_date__isnull=False,
+        expiration_date__gte=now,
+        expiration_date__lte=now + timedelta(hours=48),
+    ).exclude(status="completed").exclude(status="expired")
+
     return render(request, 'htmx/doctorportal/doctor_dashboard.html', {
-        "user": request.user
+        "user": request.user,
+        "completed_tests": completed_tests.order_by("-results__created_at"),
+        "in_progress_tests": in_progress_tests.order_by("expiration_date", "id"),
+        "expiring_soon": expiring_soon.order_by("expiration_date", "id"),
+        "previous_login_at": previous_login_at,
     })
 
 @login_required
@@ -766,8 +831,8 @@ def generate_test_link(request):
         "token": str(token),
         "link": test_url,
         "sent_to": device_email,
-        "expires": expiration_dt.strftime("%m/%d/%Y at %I:%M %p UTC"),
-        "created_at": test.created_at.strftime("%m/%d/%Y at %I:%M %p") if test.created_at else "",
+        "expires": timezone.localtime(expiration_dt).strftime("%m/%d/%Y at %I:%M %p"),
+        "created_at": timezone.localtime(test.created_at).strftime("%m/%d/%Y at %I:%M %p") if test.created_at else "",
     })
 
 
@@ -829,13 +894,61 @@ def doctor_test_results(request):
 def doctor_test_result(request, test_id):
     return render(request, 'htmx/doctorportal/doctor_test_result.html', {'test_id': test_id})
 @login_required
-@require_GET
+@require_http_methods(["GET", "POST"])
 def doctor_settings(request):
+    profile_errors = []
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        middle_initial = request.POST.get("middle_initial", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        organization_name = request.POST.get("organization_name", "").strip()
+        office_name = request.POST.get("office_name", "").strip()
+
+        if not first_name:
+            profile_errors.append("First name is required.")
+        if not last_name:
+            profile_errors.append("Last name is required.")
+        if not email:
+            profile_errors.append("Email is required.")
+        if not organization_name:
+            profile_errors.append("Hospital/Organization is required.")
+        if not office_name:
+            profile_errors.append("Doctor's Office/Practice Name is required.")
+
+        if middle_initial and len(middle_initial) > 1:
+            profile_errors.append("Middle initial must be one character.")
+
+        if email:
+            try:
+                validate_email(email)
+            except ValidationError:
+                profile_errors.append("Enter a valid email address.")
+
+        if not profile_errors:
+            request.user.first_name = first_name
+            request.user.middle_initial = middle_initial.upper()
+            request.user.last_name = last_name
+            request.user.email = email
+            request.user.organization_name = organization_name
+            request.user.office_name = office_name
+            request.user.save(update_fields=[
+                "first_name",
+                "middle_initial",
+                "last_name",
+                "email",
+                "organization_name",
+                "office_name",
+            ])
+            return redirect("htmx:doctor_settings")
+
     return render(request, 'htmx/doctorportal/doctor_settings.html', {
-        "user": request.user
+        "user": request.user,
+        "show_edit_form": request.method == "POST" or request.GET.get("edit") == "1",
+        "profile_errors": profile_errors,
     })
 
-@login_required
 @require_GET
 def doctor_support(request):
     return render(request, 'htmx/doctorportal/doctor_support.html', {})
@@ -1489,6 +1602,133 @@ def exit(request):
         "current_theme": current_theme,
     })
 
+# independent test calculate age group
+def calculate_independent_age_group(num_correct, total_answered):
+    if total_answered <= 0:
+        return "60+", 0
+
+    accuracy = round((num_correct / total_answered) * 100, 1)
+
+    if accuracy >= 90:
+        age_group = "20-29"
+    elif accuracy >= 80:
+        age_group = "30-39"
+    elif accuracy >= 70:
+        age_group = "40-49"
+    elif accuracy >= 60:
+        age_group = "50-59"
+    else:
+        age_group = "60+"
+
+    return age_group, accuracy
+
+#independent test responses
+@require_POST
+def submit_independent_test_responses(request):
+    if not request.session.get("independent_test"):
+        return JsonResponse({"error": "No active independent test session found."}, status=400)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON payload."}, status=400)
+
+    submitted_responses = payload.get("responses", [])
+    if not isinstance(submitted_responses, list):
+        return JsonResponse({"error": "Responses payload must be a list."}, status=400)
+
+    combined_stimuli = (
+        [{**stimulus, "stimulus_type": "digit"} for stimulus in DIGIT_STIMULI_DATA] +
+        [{**stimulus, "stimulus_type": "mixed"} for stimulus in MIXED_STIMULI_DATA]
+    )
+
+    stimuli_map = {}
+    for stimulus in combined_stimuli:
+        stimuli_map[stimulus["key"]] = stimulus
+
+    num_correct = 0
+    num_incorrect = 0
+    total_time = 0
+    saved_responses = []
+
+    for item in submitted_responses:
+        stimulus_key = item.get("stimulus_key")
+        stimulus = stimuli_map.get(stimulus_key)
+
+        if not stimulus:
+            continue
+
+        response_string = str(item.get("response_string", ""))
+        is_correct = response_string == stimulus["correct_answer"]
+
+        if is_correct:
+            num_correct += 1
+        else:
+            num_incorrect += 1
+
+        started_at = item.get("started_at")
+        submitted_at = item.get("submitted_at")
+
+        response_time = 0
+        if isinstance(started_at, int) and isinstance(submitted_at, int) and submitted_at >= started_at:
+            response_time = submitted_at - started_at
+            total_time += response_time
+
+        saved_responses.append({
+            "stimulus_key": stimulus_key,
+            "stimulus_type": stimulus["stimulus_type"],
+            "sequence": stimulus["sequence"],
+            "correct_answer": stimulus["correct_answer"],
+            "response_string": response_string,
+            "is_correct": is_correct,
+            "response_time": response_time,
+        })
+
+    from datetime import datetime
+    started_at_iso = request.session.get("test_started_at")
+    if started_at_iso:
+        started_at_dt = datetime.fromisoformat(started_at_iso)
+        wall_total_time = int((timezone.now() - started_at_dt).total_seconds() * 1000)
+    else:
+        wall_total_time = total_time
+
+    total_answered = num_correct + num_incorrect
+    age_group, accuracy = calculate_independent_age_group(num_correct, total_answered)
+
+    request.session["independent_results"] = {
+        "num_correct": num_correct,
+        "num_incorrect": num_incorrect,
+        "response_time": total_time,
+        "total_time": wall_total_time,
+        "accuracy": accuracy,
+        "age_group": age_group,
+        "responses": saved_responses,
+    }
+
+    return JsonResponse({
+        "ok": True,
+        "redirect_url": "/htmx/independentTestResults"
+    })
+
+#independent results
+@require_GET
+def independent_test_results(request):
+    if not request.session.get("independent_test"):
+        return redirect("htmx:home")
+
+    results = request.session.get("independent_results")
+    if not results:
+        return redirect("htmx:home")
+
+    lang = request.session.get("lang", "en")
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/independent_test_results.html", {
+        "lang": lang,
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+        "results": results,
+    })
 
 @require_POST
 def submit_test_responses(request):
@@ -1845,8 +2085,8 @@ def doctor_test_result_csv(request, test_id):
     writer.writerow(['Test Information'])
     writer.writerow(['Test ID', test.id])
     writer.writerow(['Status', test.get_status_display()])
-    writer.writerow(['Created At', test.created_at.strftime('%m/%d/%Y %H:%M') if test.created_at else '--'])
-    writer.writerow(['Expiration Date', test.expiration_date.strftime('%m/%d/%Y %H:%M') if test.expiration_date else '--'])
+    writer.writerow(['Created At', timezone.localtime(test.created_at).strftime('%m/%d/%Y %I:%M %p') if test.created_at else '--'])
+    writer.writerow(['Expiration Date', timezone.localtime(test.expiration_date).strftime('%m/%d/%Y %I:%M %p') if test.expiration_date else '--'])
     writer.writerow(['Test Taker Age', test.test_taker_age])
     writer.writerow(['Age Group', age_label])
     writer.writerow(['Independent', 'Yes' if test.is_independent else 'No'])

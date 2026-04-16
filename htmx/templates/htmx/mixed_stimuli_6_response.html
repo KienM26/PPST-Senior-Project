@@ -46,7 +46,7 @@
             {{ text.prompt }}
         </div>
 
-        <form method="get" action="{% url 'htmx:exit' %}" onsubmit="saveAndContinue()">
+        <form method="get" action="{% url 'htmx:exit' %}" onsubmit="return saveAndContinue(event)">
             <input type="hidden" name="response" id="response">
             <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
 
@@ -97,7 +97,8 @@
         let answer = [];
 
     ppstTestBuffer.startCapture();
-
+    const submitUrl = "{% if request.session.independent_test %}{% url 'htmx:submitIndependentTestResponses' %}{% else %}{% url 'htmx:submitTestResponses' %}{% endif %}";
+    const csrfToken = "{{ csrf_token }}";
     function speakInput(value) {
         const langValue = "{{ lang|default:'en' }}";
         const isSpanish = langValue === "es";
@@ -162,8 +163,26 @@
         speakInput(value);
     }
 
-    function saveAndContinue() {
+    async function saveAndContinue(event) {
+        event.preventDefault();
+
         ppstTestBuffer.saveCurrentResponse("mixed_stimuli_6", "mixed");
+
+        try {
+            const result = await ppstTestBuffer.submitAll(submitUrl, csrfToken);
+
+            if (result.redirect_url) {
+                window.location.href = result.redirect_url;
+                return false;
+            }
+
+            window.location.href = "{% url 'htmx:exit' %}";
+            return false;
+        } catch (error) {
+            console.error(error);
+            alert("Failed to submit test responses.");
+            return false;
+        }
     }
     </script>
     

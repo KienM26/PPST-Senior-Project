@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,143 +9,158 @@
     <link rel="stylesheet" href="{% static 'htmx/doctorportal.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body class="page">
 
-<!-- NAVBAR -->
-<nav class="navbar">
-    <div class="nav-left">
-        <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
-    </div>
-    <div class="nav-right">
-        <a href="{% url 'htmx:doctor_dashboard' %}">Dashboard</a>
-        <a href="{% url 'htmx:doctor_create_test' %}">Create Test</a>
-        <a href="{% url 'htmx:doctor_test_results' %}">Results</a>
-        <a href="{% url 'htmx:doctor_settings' %}">Settings</a>
-        <a href="{% url 'htmx:doctor_support' %}">Support</a>
-        <a href="{% url 'htmx:doctor_logout' %}">Log Out</a>
-    </div>
-</nav>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST Logo">
+        </div>
+        <div class="nav-right">
+            <a href="{% url 'htmx:doctor_dashboard' %}">Dashboard</a>
+            <a href="{% url 'htmx:doctor_create_test' %}">Create Test</a>
+            <a href="{% url 'htmx:doctor_test_results' %}">Results</a>
+            <a href="{% url 'htmx:doctor_settings' %}">Settings</a>
+            <a href="{% url 'htmx:doctor_support' %}">Support</a>
+            <a href="{% url 'htmx:doctor_logout' %}">Log Out</a>
+        </div>
+    </nav>
 
-<main class="main-content">
-    <div class="results-page-shell">
-
-        <!-- PAGE TITLE -->
-        <h1 class="results-page-title">Test Results For Test {{ test.id }}</h1>
-        <p class="results-page-subtitle">Test ID: #{{ test.id }}</p>
-        <p class="results-page-subtitle">Completed: {{ test.completed_date|default:"--" }}</p>
-
-        <!-- EXPORT CSV BUTTON -->
-        <form action="{% url 'htmx:doctor_test_result_csv' test.id %}" method="get">
-            <button type="submit" class="results-csv-btn">Export as CSV</button>
-        </form>
-
-        <!-- SUMMARY TABLE -->
-        <section class="results-section">
-            <h2 class="section-heading">Patient vs Age Group Summary</h2>
-            <div class="results-table-wrapper">
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>Summary</th>
-                            <th>Patient</th>
-                            <th>Average For {{ age_group_label }}</th>
-                        </tr>
-                    </thead>
-                   <tbody>
-    <tr>
-        <td>Accuracy</td>
-        <td>{% if result %}{{ result.accuracy|floatformat:1 }}%{% else %}--{% endif %}</td>
-        <td>{% if avg_accuracy != "--" %}{{ avg_accuracy }}%{% else %}--{% endif %}</td>
-    </tr>
-    <tr>
-        <td>Completion Time</td>
-        <td>{{ patient_completion_display }}</td>
-        <td>{{ avg_completion_display }}</td>
-    </tr>
-    <tr>
-        <td>Avg Response</td>
-        <td>{{ patient_response_display }}</td>
-        <td>{{ avg_response_display }}</td>
-    </tr>
-    <tr>
-        <td>Correct</td>
-        <td>{% if result %}{{ result.num_of_correct }}{% else %}--{% endif %}</td>
-        <td>{{ avg_correct|default:"--" }}</td>
-    </tr>
-    <tr>
-        <td>Incorrect</td>
-        <td>{% if result %}{{ result.num_of_incorrect }}{% else %}--{% endif %}</td>
-        <td>{{ avg_incorrect|default:"--" }}</td>
-    </tr>
-    <tr>
-        <td>Age</td>
-        <td>{% if test.test_taker_age %}{{ test.test_taker_age }}{% else %}--{% endif %}</td>
-        <td>{{ age_group_label }}</td>
-    </tr>
-</tbody>
-                </table>
+    <main class="main-content">
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-text">
+                <h1>Test Results For Test {{ test.id }}</h1>
+                <h2>Test ID: #{{ test.id }}</h2>
             </div>
         </section>
+        <div class="results-page-shell">
+            <p class="results-page-subtitle"> Completed:
+                {% if test.completed_date %}
+                {{ test.completed_date }}
+                {% else %}
+                --
+                {% endif %}</p>
+            <p class="results-page-subtitle">Created: {{ test.created_at |default:"--" }}</p>
 
-        <!-- PERFORMANCE CHARTS -->
-        <section class="results-section">
-            <h2 class="section-heading">Performance Charts</h2>
-            <div class="analytics-grid">
-                <div class="chart-box">
-                    <h3 class="chart-title">Success Performance Statistics By Age Group</h3>
-                    <canvas id="successAgeChart"></canvas>
+
+            <!-- EXPORT CSV BUTTON -->
+            <form action="{% url 'htmx:doctor_test_result_csv' test.id %}" method="get">
+                <button type="submit" class="results-csv-btn">Export as CSV</button>
+            </form>
+
+            <!-- SUMMARY TABLE -->
+            <section class="results-section">
+                <h2 class="section-heading">Patient vs Age Group Summary</h2>
+                <div class="results-table-wrapper">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Summary</th>
+                                <th>Patient</th>
+                                <th>Average For {{ age_group_label }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Accuracy</td>
+                                <td>{% if result %}{{ result.accuracy|floatformat:1 }}%{% else %}--{% endif %}</td>
+                                <td>{% if avg_accuracy != "--" %}{{ avg_accuracy }}%{% else %}--{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td>Completion Time</td>
+                                <td>{{ patient_completion_display }}</td>
+                                <td>{{ avg_completion_display }}</td>
+                            </tr>
+                            <tr>
+                                <td>Avg Response</td>
+                                <td>{{ patient_response_display }}</td>
+                                <td>{{ avg_response_display }}</td>
+                            </tr>
+                            <tr>
+                                <td>Correct</td>
+                                <td>{% if result %}{{ result.num_of_correct }}{% else %}--{% endif %}</td>
+                                <td>{{ avg_correct|default:"--" }}</td>
+                            </tr>
+                            <tr>
+                                <td>Incorrect</td>
+                                <td>{% if result %}{{ result.num_of_incorrect }}{% else %}--{% endif %}</td>
+                                <td>{{ avg_incorrect|default:"--" }}</td>
+                            </tr>
+                            <tr>
+                                <td>Age</td>
+                                <td>{% if test.test_taker_age %}{{ test.test_taker_age }}{% else %}--{% endif %}</td>
+                                <td>{{ age_group_label }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="chart-box">
-                    <h3 class="chart-title">Completion Time Comparison</h3>
-                    <canvas id="completionChart"></canvas>
+            </section>
+
+            <!-- PERFORMANCE CHARTS -->
+            <section class="results-section">
+                <h2 class="section-heading">Performance Charts</h2>
+                <div class="analytics-grid">
+                    <div class="chart-box">
+                        <h3 class="chart-title">Success Performance Statistics By Age Group</h3>
+                        <canvas id="successAgeChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-title">Completion Time Comparison</h3>
+                        <canvas id="completionChart"></canvas>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-    </div>
-</main>
+        </div>
+    </main>
 
-<script>
-    const ageGroupLabel = "{{ age_group_label }}";
+    <script>
+        const ageGroupLabel = "{{ age_group_label }}";
 
-    // Success by Age Group Chart
-    const successAgeCtx = document.getElementById('successAgeChart').getContext('2d');
-    new Chart(successAgeCtx, {
-        type: 'bar',
-        data: {
-            labels: [ageGroupLabel],
-            datasets: [{
-                label: 'Success by Age Group',
-                data: [{{ avg_accuracy|default:"0" }}],
-                backgroundColor: '#77d887'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, max: 100 } }
-        }
-    });
+        // Success by Age Group Chart
+        const successAgeCtx = document.getElementById('successAgeChart').getContext('2d');
+        new Chart(successAgeCtx, {
+            type: 'bar',
+            data: {
+                labels: [ageGroupLabel],
+                datasets: [{
+                    label: 'Success by Age Group',
+                    data: [{{ avg_accuracy|default_if_none:"0" }}],
+                    backgroundColor: '#77d887'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
 
-    // Completion Time Comparison Chart
-    const completionCtx = document.getElementById('completionChart').getContext('2d');
-    new Chart(completionCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Patient', ageGroupLabel],
-            datasets: [{
-                label: 'Completion Time (seconds)',
-                data: [{{ result.total_time|default:"0" }}/1000, {{ avg_completion|default:"0" }}/1000],
-                backgroundColor: ['#66c7e3', '#73d7df']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-</script>
+        // Completion Time Comparison Chart
+        const completionCtx = document.getElementById('completionChart').getContext('2d');
+        new Chart(completionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Patient', ageGroupLabel],
+                datasets: [{
+                    label: 'Completion Time (seconds)',
+                    data: [
+                        {% if result %}{{ result.total_time }}{% else %}0{% endif %} / 1000,
+                        {{ avg_completion|default_if_none:"0" }} / 1000
+                    ],
+                    backgroundColor: ['#66c7e3', '#73d7df']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    </script>
 
 </body>
+
 </html>

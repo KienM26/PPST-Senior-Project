@@ -21,6 +21,10 @@ urlpatterns = [
     path("submitTestResponses", views.submit_test_responses, name="submitTestResponses"),
     path("practiceStimulus", views.practice_stimulus, name="practiceStimulus"),
 
+    ## independent test
+    path("startIndependentTest", views.start_independent_test, name="startIndependentTest"),
+    path("independentTestResults", views.independent_test_results, name="independentTestResults"),
+    path("submitIndependentTestResponses", views.submit_independent_test_responses, name="submitIndependentTestResponses"),
     ##practice exam select language and accessibility
     path("selectLanguage", views.select_language, name="SelectLanguage"),
     path("accessibility", views.accessibility, name="Accessibility"),
