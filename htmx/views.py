@@ -355,6 +355,23 @@ def practice_test_page(request):
         "current_theme": current_theme,
     })
 
+#start indepedent test
+@require_POST
+def start_independent_test(request):
+    # clear old independent/normal test session data
+    for key in (
+        "independent_test",
+        "independent_stimuli",
+        "independent_results",
+        "current_test_id",
+        "current_test_type",
+        "current_test_stimulus_ids",
+        "test_started_at",
+    ):
+        request.session.pop(key, None)
+
+    request.session["independent_test"] = True
+    return redirect("htmx:SelectLanguage")
 
 @require_POST
 def start_practice_test(request):
@@ -364,6 +381,12 @@ def start_practice_test(request):
 
 @require_POST
 def start_digit_test(request):
+
+    #independent test implementation
+    if request.session.get("independent_test"):
+        request.session["test_started_at"] = timezone.now().isoformat()
+        return redirect("htmx:digitStimuli1")
+    
     # If a token-based test was already set up by take_test, reuse it.
     existing_test_id = request.session.get("current_test_id")
     existing_stimulus_ids = request.session.get("current_test_stimulus_ids")
@@ -1422,6 +1445,133 @@ def exit(request):
         "current_theme": current_theme,
     })
 
+# independent test calculate age group
+def calculate_independent_age_group(num_correct, total_answered):
+    if total_answered <= 0:
+        return "60+", 0
+
+    accuracy = round((num_correct / total_answered) * 100, 1)
+
+    if accuracy >= 90:
+        age_group = "20-29"
+    elif accuracy >= 80:
+        age_group = "30-39"
+    elif accuracy >= 70:
+        age_group = "40-49"
+    elif accuracy >= 60:
+        age_group = "50-59"
+    else:
+        age_group = "60+"
+
+    return age_group, accuracy
+
+#independent test responses
+@require_POST
+def submit_independent_test_responses(request):
+    if not request.session.get("independent_test"):
+        return JsonResponse({"error": "No active independent test session found."}, status=400)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON payload."}, status=400)
+
+    submitted_responses = payload.get("responses", [])
+    if not isinstance(submitted_responses, list):
+        return JsonResponse({"error": "Responses payload must be a list."}, status=400)
+
+    combined_stimuli = (
+        [{**stimulus, "stimulus_type": "digit"} for stimulus in DIGIT_STIMULI_DATA] +
+        [{**stimulus, "stimulus_type": "mixed"} for stimulus in MIXED_STIMULI_DATA]
+    )
+
+    stimuli_map = {}
+    for stimulus in combined_stimuli:
+        stimuli_map[stimulus["key"]] = stimulus
+
+    num_correct = 0
+    num_incorrect = 0
+    total_time = 0
+    saved_responses = []
+
+    for item in submitted_responses:
+        stimulus_key = item.get("stimulus_key")
+        stimulus = stimuli_map.get(stimulus_key)
+
+        if not stimulus:
+            continue
+
+        response_string = str(item.get("response_string", ""))
+        is_correct = response_string == stimulus["correct_answer"]
+
+        if is_correct:
+            num_correct += 1
+        else:
+            num_incorrect += 1
+
+        started_at = item.get("started_at")
+        submitted_at = item.get("submitted_at")
+
+        response_time = 0
+        if isinstance(started_at, int) and isinstance(submitted_at, int) and submitted_at >= started_at:
+            response_time = submitted_at - started_at
+            total_time += response_time
+
+        saved_responses.append({
+            "stimulus_key": stimulus_key,
+            "stimulus_type": stimulus["stimulus_type"],
+            "sequence": stimulus["sequence"],
+            "correct_answer": stimulus["correct_answer"],
+            "response_string": response_string,
+            "is_correct": is_correct,
+            "response_time": response_time,
+        })
+
+    from datetime import datetime
+    started_at_iso = request.session.get("test_started_at")
+    if started_at_iso:
+        started_at_dt = datetime.fromisoformat(started_at_iso)
+        wall_total_time = int((timezone.now() - started_at_dt).total_seconds() * 1000)
+    else:
+        wall_total_time = total_time
+
+    total_answered = num_correct + num_incorrect
+    age_group, accuracy = calculate_independent_age_group(num_correct, total_answered)
+
+    request.session["independent_results"] = {
+        "num_correct": num_correct,
+        "num_incorrect": num_incorrect,
+        "response_time": total_time,
+        "total_time": wall_total_time,
+        "accuracy": accuracy,
+        "age_group": age_group,
+        "responses": saved_responses,
+    }
+
+    return JsonResponse({
+        "ok": True,
+        "redirect_url": "/htmx/independentTestResults"
+    })
+
+#independent results
+@require_GET
+def independent_test_results(request):
+    if not request.session.get("independent_test"):
+        return redirect("htmx:home")
+
+    results = request.session.get("independent_results")
+    if not results:
+        return redirect("htmx:home")
+
+    lang = request.session.get("lang", "en")
+    current_theme = get_current_theme(request)
+
+    return render(request, "htmx/independent_test_results.html", {
+        "lang": lang,
+        "lang_info": LANGUAGE_INFO[lang],
+        "current_theme": current_theme,
+        "results": results,
+    })
 
 @require_POST
 def submit_test_responses(request):

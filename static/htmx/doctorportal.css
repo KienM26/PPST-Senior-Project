@@ -73,6 +73,44 @@ body.login-page .main-content {
     align-items: center;
 }
 
+.hero-buttons {
+    margin-top: 28px;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    padding: 0 28px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0f9db7 0%, #0b7f93 100%);
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(15, 157, 183, 0.26);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.04);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(15, 157, 183, 0.32);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(15, 157, 183, 0.22);
+}
+
+.btn-primary:focus-visible {
+    outline: 3px solid rgba(11, 127, 147, 0.35);
+    outline-offset: 3px;
+}
+
 /* TITLE */
 .hero-text h1 {
     font-size: 56px;
