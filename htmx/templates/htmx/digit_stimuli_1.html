@@ -41,6 +41,7 @@
     font-weight:600;
     text-align:center;
     line-height:1.2;
+    color: var(--text-dark);
 }
 
 @media (max-width: 700px){
@@ -80,22 +81,36 @@
 </main>
 
 <script>
-    const sequence = ["1", "4", "7", "8"];
+    const sequence = "{{ stimulus.sequence|escapejs }}".split("");
+    const displayMs = 1800;
     let index = 0;
 
     function showNext() {
         const box = document.getElementById("sequence-box");
+
+        if (!box) return;
+
+        if (!sequence.length) {
+            box.textContent = "ERR";
+            console.log("No stimulus.sequence found");
+            return;
+        }
+
+        box.textContent = sequence[index];
+        index++;
+
         if (index < sequence.length) {
-            box.textContent = sequence[index];
-            index++;
-            setTimeout(showNext, 1800);
+            setTimeout(showNext, displayMs);
         } else {
-            window.location.href = "{% url 'htmx:digitStimuli1Response' %}?lang={{ lang|default:'en' }}";
+            setTimeout(() => {
+                window.location.href = "{% url 'htmx:digitStimuli1Response' %}?lang={{ lang|default:'en' }}";
+            }, displayMs);
         }
     }
 
-    window.onload = () => setTimeout(showNext, 500);
+    window.addEventListener("load", showNext);
 </script>
+
 <script>
 function playAudio(baseName) {
     const langValue = "{{ lang|default:'en' }}";

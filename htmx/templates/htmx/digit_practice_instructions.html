@@ -73,12 +73,12 @@
             </video>
         </div>
 
-        <form method="get" action="{% url 'htmx:practiceDigitStimuli1' %}" style="display:flex; justify-content:center;">
-            <input type="hidden" name="lang" value="{{ lang|default:'en' }}">
-            <button type="submit" class="btn centered" id="nextBtn" disabled>
-                {{ text.intro_button|default:"Next" }}
-            </button>
-        </form>
+        <form method="post" action="{% url 'htmx:startPracticeTest' %}" style="display:flex; justify-content:center;">
+    {% csrf_token %}
+    <button type="submit" class="btn centered" id="nextBtn" disabled>
+        {{ text.intro_button|default:"Next" }}
+    </button>
+</form>
     </main>
 
     <script>
