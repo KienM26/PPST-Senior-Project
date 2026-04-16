@@ -36,6 +36,7 @@
     border:2px solid #333;
     display:flex;
     align-items:center;
+    color: var(--text-dark);
     justify-content:center;
     font-size:120px;
     font-weight:600;
@@ -80,21 +81,34 @@
 </main>
 
 <script>
-    const sequence = [ "9", "3", "5", "6"];
+    const sequence = "{{ stimulus.sequence|escapejs }}".split("");
+    const displayMs = 1800;
     let index = 0;
 
     function showNext() {
         const box = document.getElementById("sequence-box");
+
+        if (!box) return;
+
+        if (!sequence.length) {
+            box.textContent = "ERR";
+            console.log("No stimulus.sequence found");
+            return;
+        }
+
+        box.textContent = sequence[index];
+        index++;
+
         if (index < sequence.length) {
-            box.textContent = sequence[index];
-            index++;
-            setTimeout(showNext, 1800);
+            setTimeout(showNext, displayMs);
         } else {
-            window.location.href = "{% url 'htmx:digitStimuli2Response' %}?lang={{ lang|default:'en' }}";
+            setTimeout(() => {
+                window.location.href = "{% url 'htmx:digitStimuli2Response' %}?lang={{ lang|default:'en' }}";
+            }, displayMs);
         }
     }
 
-    window.onload = () => setTimeout(showNext, 500);
+    window.addEventListener("load", showNext);
 </script>
 
 <script>

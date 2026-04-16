@@ -1,14 +1,8 @@
 from django.utils import timezone
 from database.models import Doctor, Test, Stimulus, Response, Latency, Results
 
-
-
-
 for c in [Latency, Response, Stimulus, Results, Test, Doctor]:
     c.objects.all().delete()
-
-
-
 
 # doctor data
 doctor1 = Doctor.objects.create_user(
@@ -22,9 +16,6 @@ doctor1 = Doctor.objects.create_user(
     medical_license_number="LIC1001",
     is_approved=True
 )
-
-
-
 
 # stimulus template
 stimuli_data = [
@@ -46,7 +37,6 @@ stimuli_data = [
     ("2L48K", "248KL", "mixed", 5),
 ]
 
-
 #completed tests creator
 def create_completed_test_with_full_data(doctor, age, is_independent, answer_map, total_time, response_time, base_latency=600):
     test = Test.objects.create(doctor=doctor, status="completed", expiration_date=timezone.now() - timezone.timedelta(days=1), test_taker_age=age, is_independent=is_independent); num_correct = 0; num_incorrect = 0
@@ -55,9 +45,6 @@ def create_completed_test_with_full_data(doctor, age, is_independent, answer_map
         for j, char in enumerate(response.response_string):
             Latency.objects.create(response=response, input_order=j + 1, input_value=char, time=base_latency + (j * 120) + (i * 30))
     Results.objects.create(test=test, total_time=total_time, response_time=response_time, num_of_correct=num_correct, num_of_incorrect=num_incorrect); return test
-
-
-
 
 # doctor1 completed test 1 - correct
 answers_test1 = [
