@@ -63,7 +63,7 @@
 
     <h1 class="title">{{ text.title }} 6</h1>
 
-    <div class="speaker-wrap" onclick="playAudio('Digit_Stimuli_6_Display')" style="cursor:pointer;">
+    <div class="speaker-wrap" style="cursor:pointer;">
         <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
     </div>
 
@@ -82,19 +82,49 @@
 <script>
     const sequence = ["1", "4", "8", "9", "2"];
     let index = 0;
+    function convertToAudioName(item) {
+        if (item === "1") return "one";
+        if (item === "2") return "two";
+        if (item === "3") return "three";
+        if (item === "4") return "four";
+        if (item === "5") return "five";
+        if (item === "6") return "six";
+        if (item === "7") return "seven";
+        if (item === "8") return "eight";
+        if (item === "9") return "nine";
+
+    return item.toLowerCase(); 
+}
+let audioUnlocked = false;
+
+function unlockAudio() {
+    if (!audioUnlocked) {
+        const audio = new Audio();
+        audio.play().catch(() => {});
+        audioUnlocked = true;
+    }
+}
 
     function showNext() {
         const box = document.getElementById("sequence-box");
         if (index < sequence.length) {
-            box.textContent = sequence[index];
+            const item = sequence[index];
+            box.textContent = item;
+
+            const name = convertToAudioName(item);
+            playAudio(name);
+
             index++;
-            setTimeout(showNext, 1650);
+            setTimeout(showNext, 2000);
         } else {
             window.location.href = "{% url 'htmx:digitStimuli6Response' %}?lang={{ lang|default:'en' }}";
         }
     }
 
-    window.onload = () => setTimeout(showNext, 500);
+    window.onload = () =>{
+        unlockAudio();
+        setTimeout(showNext, 500);
+    };
 </script>
 
 <script>
