@@ -81,22 +81,53 @@
 </main>
 
 <script>
-    const sequence = ["3", "7", "2", "0"];
+    const sequence = ["3", "7", "2", "5"];
     let index = 0;
+    function convertToAudioName(item) {
+        if (item === "1") return "one";
+        if (item === "2") return "two";
+        if (item === "3") return "three";
+        if (item === "4") return "four";
+        if (item === "5") return "five";
+        if (item === "6") return "six";
+        if (item === "7") return "seven";
+        if (item === "8") return "eight";
+        if (item === "9") return "nine";
+
+    return item.toLowerCase(); 
+}
+let audioUnlocked = false;
+
+function unlockAudio() {
+    if (!audioUnlocked) {
+        const audio = new Audio();
+        audio.play().catch(() => {});
+        audioUnlocked = true;
+    }
+}
 
     function showNext() {
         const box = document.getElementById("sequence-box");
         if (index < sequence.length) {
-            box.textContent = sequence[index];
+            const item = sequence[index];
+            box.textContent = item;
+
+            const name = convertToAudioName(item);
+            playAudio(name);
+
             index++;
-            setTimeout(showNext, 1800);
+            setTimeout(showNext, 2000);
         } else {
             window.location.href = "{% url 'htmx:practiceDigitStimuli1Response' %}?lang={{ lang|default:'en' }}";
         }
     }
 
-    window.onload = () => setTimeout(showNext, 500);
-</script>
+    window.onload = () =>{
+        unlockAudio();
+        setTimeout(showNext, 500);
+    };
+    </script>
+
 <script>
 function playAudio(baseName) {
     const langValue = "{{ lang|default:'en' }}";

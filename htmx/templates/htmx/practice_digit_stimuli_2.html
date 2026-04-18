@@ -62,7 +62,7 @@
         <img src="{% static 'htmx/images/ppst-logo.png' %}" alt="PPST logo">
     </div>
 
-    <h1 class="title">{{ text.practice_digit_stimuli_2 }}</h1>
+    <h1 class="title">{{ text.title }} 2</h1>
 
     <div class="speaker-wrap" onclick="playAudio('Practice_Digit_Stimuli_2_Display')" style="cursor:pointer;">
         <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
@@ -84,10 +84,29 @@
     const sequence = ["2", "5", "3", "7"];
     let index = 0;
 
+    function convertToAudioName(item) {
+        if (item === "1") return "one";
+        if (item === "2") return "two";
+        if (item === "3") return "three";
+        if (item === "4") return "four";
+        if (item === "5") return "five";
+        if (item === "6") return "six";
+        if (item === "7") return "seven";
+        if (item === "8") return "eight";
+        if (item === "9") return "nine";
+
+        return item.toLowerCase();
+    }
+
     function showNext() {
         const box = document.getElementById("sequence-box");
         if (index < sequence.length) {
-            box.textContent = sequence[index];
+            const item = sequence[index];
+            box.textContent = item;
+            
+            const name = convertToAudioName(item);
+            playAudio(name);
+
             index++;
             setTimeout(showNext, 2000);
         } else {
