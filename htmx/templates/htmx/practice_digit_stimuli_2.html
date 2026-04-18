@@ -64,7 +64,7 @@
 
     <h1 class="title">{{ text.title }} 2</h1>
 
-    <div class="speaker-wrap" onclick="playAudio('Practice_Digit_Stimuli_2_Display')" style="cursor:pointer;">
+    <div class="speaker-wrap" style="cursor:pointer;">
         <img src="{% static 'htmx/images/speaker.png' %}" alt="Speaker icon">
     </div>
 
@@ -98,6 +98,16 @@
         return item.toLowerCase();
     }
 
+    let audioUnlocked = false;
+
+    function unlockAudio() {
+        if (!audioUnlocked) {
+            const audio = new Audio();
+            audio.play().catch(() => {});
+            audioUnlocked = true;
+        }
+    }
+
     function showNext() {
         const box = document.getElementById("sequence-box");
         if (index < sequence.length) {
@@ -114,7 +124,10 @@
         }
     }
 
-    window.onload = () => setTimeout(showNext, 500);
+    window.onload = () => {
+        unlockAudio();
+        setTimeout(showNext, 500);
+    };
 </script>
 
 <script>
