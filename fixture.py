@@ -1,8 +1,14 @@
 from django.utils import timezone
 from database.models import Doctor, Test, Stimulus, Response, Latency, Results
 
+
+
+
 for c in [Latency, Response, Stimulus, Results, Test, Doctor]:
     c.objects.all().delete()
+
+
+
 
 # doctor data
 doctor1 = Doctor.objects.create_user(
@@ -17,6 +23,9 @@ doctor1 = Doctor.objects.create_user(
     medical_license_number="LIC1001",
     is_approved=True
 )
+
+
+
 
 # stimulus template
 stimuli_data = [
@@ -37,6 +46,7 @@ stimuli_data = [
     ("5KI76", "567IK", "mixed", 5),
     ("2L48K", "248KL", "mixed", 5),
 ]
+
 
 #completed tests creator
 def create_completed_test_with_full_data(doctor, age, is_independent, answer_map, total_time, response_time, base_latency=600):

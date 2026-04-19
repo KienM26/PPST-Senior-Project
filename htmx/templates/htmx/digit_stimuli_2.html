@@ -36,7 +36,6 @@
     border:2px solid #333;
     display:flex;
     align-items:center;
-    color: var(--text-dark);
     justify-content:center;
     font-size:120px;
     font-weight:600;
@@ -81,7 +80,7 @@
 </main>
 
 <script>
-    const sequence = "{{ stimulus.sequence|escapejs }}".split("");
+    const sequence = [ "9", "3", "5", "6"];
     const displayMs = 2000;
     let index = 0;
 
@@ -111,7 +110,6 @@
 
     function showNext() {
         const box = document.getElementById("sequence-box");
-
         if (index < sequence.length) {
             const item = sequence[index];
             box.textContent = item;
@@ -120,7 +118,7 @@
             playAudio(name);
 
             index++;
-            setTimeout(showNext, displayMs);
+            setTimeout(showNext, 2000);
         } else {
             window.location.href = "{% url 'htmx:digitStimuli2Response' %}?lang={{ lang|default:'en' }}";
         }
