@@ -80,7 +80,7 @@
 </main>
 
 <script>
-    const sequence = ["3", "5", "4", "8", "6"];
+    const sequence = {{ sequence|safe }};
     let index = 0;
     function convertToAudioName(item) {
         if (item === "1") return "one";

@@ -25,23 +25,54 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 import re
 
-DIGIT_STIMULI_DATA = [
-    {"key": "digit_stimuli_1", "sequence": "37K2M", "correct_answer": "237"},
-    {"key": "digit_stimuli_2", "sequence": "49L1P", "correct_answer": "149"},
-    {"key": "digit_stimuli_3", "sequence": "82Q5R", "correct_answer": "258"},
-    {"key": "digit_stimuli_4", "sequence": "61S4T", "correct_answer": "146"},
-    {"key": "digit_stimuli_5", "sequence": "93U2V", "correct_answer": "239"},
-    {"key": "digit_stimuli_6", "sequence": "51W8X", "correct_answer": "158"},
-]
+import random
+import string
 
-MIXED_STIMULI_DATA = [
-    {"key": "mixed_stimuli_1", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_2", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_3", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_4", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_5", "sequence": "37K2M", "correct_answer": "237KM"},
-    {"key": "mixed_stimuli_6", "sequence": "37K2M", "correct_answer": "237KM"},
-]
+USED_STIMULI = set()
+
+
+def generate_digit_stimulus():
+    while True:
+        digits = random.sample("123456789", 5)
+        sequence = "".join(digits)
+
+        if sequence in USED_STIMULI:
+            continue
+
+        USED_STIMULI.add(sequence)
+
+        correct_answer = "".join(sorted(digits))  # ascending digits
+
+        return {
+            "key": f"digit_{sequence}",
+            "sequence": sequence,
+            "correct_answer": correct_answer,
+        }
+
+
+def generate_mixed_stimulus():
+    while True:
+        digits = random.sample("123456789", 3)
+        letters = random.sample(string.ascii_uppercase, 2)
+
+        combined = digits + letters
+        random.shuffle(combined)
+        sequence = "".join(combined)
+
+        if sequence in USED_STIMULI:
+            continue
+
+        USED_STIMULI.add(sequence)
+
+        correct_answer = "".join(sorted(digits)) + "".join(sorted(letters))
+
+        return {
+            "key": f"mixed_{sequence}",
+            "sequence": sequence,
+            "correct_answer": correct_answer,
+        }
+
+
 
 
 ACCESSIBILITY_THEMES = {
@@ -355,22 +386,105 @@ def practice_test_page(request):
         "current_theme": current_theme,
     })
 
-#start indepedent test
 @require_POST
 def start_independent_test(request):
-    # clear old independent/normal test session data
     for key in (
         "independent_test",
         "independent_stimuli",
         "independent_results",
-        "current_test_id",
-        "current_test_type",
-        "current_test_stimulus_ids",
+        "used_stimuli_keys",
         "test_started_at",
     ):
         request.session.pop(key, None)
 
     request.session["independent_test"] = True
+    request.session["test_started_at"] = timezone.now().isoformat()
+
+    # Pull stimuli from database fixture instead of generating random ones
+    baseline_test = Test.objects.filter(status="completed").first()
+    
+    if baseline_test and baseline_test.stimuli.exists():
+        baseline_stimuli = baseline_test.stimuli.all()
+        
+        # Get all digit stimuli by span
+        digit_4_span = list(baseline_stimuli.filter(stimulus_type="digit", span_length=4))
+        digit_5_span = list(baseline_stimuli.filter(stimulus_type="digit", span_length=5))
+        
+        # Get all mixed stimuli by span
+        mixed_4_span = list(baseline_stimuli.filter(stimulus_type="mixed", span_length=4))
+        mixed_5_span = list(baseline_stimuli.filter(stimulus_type="mixed", span_length=5))
+        
+        # Shuffle each group
+        random.shuffle(digit_4_span)
+        random.shuffle(digit_5_span)
+        random.shuffle(mixed_4_span)
+        random.shuffle(mixed_5_span)
+        
+        # Create stimuli arrays with proper key format for independent test
+        digit_stimuli = []
+        for stim in (digit_4_span + digit_5_span):
+            digit_stimuli.append({
+                "key": f"digit_{stim.stimulus_string}",
+                "sequence": stim.stimulus_string,
+                "correct_answer": stim.correct_answer,
+            })
+        
+        mixed_stimuli = []
+        for stim in (mixed_4_span + mixed_5_span):
+            mixed_stimuli.append({
+                "key": f"mixed_{stim.stimulus_string}",
+                "sequence": stim.stimulus_string,
+                "correct_answer": stim.correct_answer,
+            })
+    else:
+        # Fallback: use fixture data directly
+        digit_4_span_data = [
+            ("1478", "1478"),
+            ("9356", "3569"),
+            ("9732", "2379"),
+        ]
+        digit_5_span_data = [
+            ("35486", "34568"),
+            ("48973", "34789"),
+            ("14982", "12489"),
+        ]
+        mixed_4_span_data = [
+            ("A2L6", "26AL"),
+            ("7LU5", "57LU"),
+            ("F82I", "28FI"),
+        ]
+        mixed_5_span_data = [
+            ("UC86F", "68CFU"),
+            ("5KI76", "567IK"),
+            ("2L48K", "248KL"),
+        ]
+        
+        # Shuffle each group
+        random.shuffle(digit_4_span_data)
+        random.shuffle(digit_5_span_data)
+        random.shuffle(mixed_4_span_data)
+        random.shuffle(mixed_5_span_data)
+        
+        digit_stimuli = []
+        for seq, ans in (digit_4_span_data + digit_5_span_data):
+            digit_stimuli.append({
+                "key": f"digit_{seq}",
+                "sequence": seq,
+                "correct_answer": ans,
+            })
+        
+        mixed_stimuli = []
+        for seq, ans in (mixed_4_span_data + mixed_5_span_data):
+            mixed_stimuli.append({
+                "key": f"mixed_{seq}",
+                "sequence": seq,
+                "correct_answer": ans,
+            })
+
+    request.session["digit_stimuli"] = digit_stimuli
+    request.session["mixed_stimuli"] = mixed_stimuli
+    request.session["used_stimuli_keys"] = []
+
     return redirect("htmx:SelectLanguage")
 
 @require_POST
@@ -381,64 +495,20 @@ def start_practice_test(request):
 
 @require_POST
 def start_digit_test(request):
-
-    #independent test implementation
-    if request.session.get("independent_test"):
-        request.session["test_started_at"] = timezone.now().isoformat()
-        return redirect("htmx:digitStimuli1")
-    
-    # If a token-based test was already set up by take_test, reuse it.
-    existing_test_id = request.session.get("current_test_id")
-    existing_stimulus_ids = request.session.get("current_test_stimulus_ids")
-
-    if existing_test_id and existing_stimulus_ids:
-        # Verify the test exists and is still active
-        try:
-            test = Test.objects.get(id=existing_test_id, status="active")
-            request.session["test_started_at"] = timezone.now().isoformat()
-            # Session already has stimulus IDs from take_test — just proceed.
-            request.session["current_test_type"] = "full"
-            return redirect("htmx:digitStimuli1")
-        except Test.DoesNotExist:
-            pass  # Fall through to create a new test if the existing one is gone
-
-    # No existing test session — create a fresh standalone test.
-    combined_stimuli = [
-        {**stimulus, "stimulus_type": "digit"} for stimulus in DIGIT_STIMULI_DATA
-    ] + [
-        {**stimulus, "stimulus_type": "mixed"} for stimulus in MIXED_STIMULI_DATA
-    ]
-
-    test = Test.objects.create(
-        doctor=request.user if request.user.is_authenticated else None,
-        status="active",
-        test_taker_age=12,
-        is_independent=True,
-    )
-
     request.session["test_started_at"] = timezone.now().isoformat()
+    request.session["current_stimulus_index"] = 0
+    request.session["current_test_section"] = "digit"
 
-    stimulus_ids = {}
-    for stimulus in combined_stimuli:
-        created = Stimulus.objects.create(
-            test=test,
-            stimulus_string=stimulus["sequence"],
-            correct_answer=stimulus["correct_answer"],
-            stimulus_type=stimulus["stimulus_type"],
-            span_length=len(stimulus["sequence"]),
-        )
-        stimulus_ids[stimulus["key"]] = created.id
+    # ensure clean tracking
+    request.session.setdefault("used_stimuli_keys", [])
 
-    request.session["current_test_id"] = test.id
-    request.session["current_test_type"] = "full"
-    request.session["current_test_stimulus_ids"] = stimulus_ids
     return redirect("htmx:digitStimuli1")
 
 
 @require_POST
 def start_mixed_test(request):
-    if not request.session.get("current_test_id"):
-        initialize_test_session(request, MIXED_STIMULI_DATA, "mixed")
+    request.session["current_stimulus_index"] = 2  # After 2 digit stimuli
+    request.session["current_test_section"] = "mixed"
     return redirect("htmx:mixedStimuli1")
 
 
@@ -805,34 +875,116 @@ def take_test(request, token):
         test.status = "active"
         test.save(update_fields=["status"])
 
-    combined_stimuli = [
-        {**s, "stimulus_type": "digit"} for s in DIGIT_STIMULI_DATA
-    ] + [
-        {**s, "stimulus_type": "mixed"} for s in MIXED_STIMULI_DATA
-    ]
-
+    # Only create stimuli if they don't exist for this test
     if not test.stimuli.exists():
-        for stimulus in combined_stimuli:
-            Stimulus.objects.create(
-                test=test,
-                stimulus_string=stimulus["sequence"],
-                correct_answer=stimulus["correct_answer"],
-                stimulus_type=stimulus["stimulus_type"],
-                span_length=len(stimulus["sequence"]),
-            )
+        # Get baseline stimuli from any completed test (they're the same for all tests)
+        baseline_test = Test.objects.filter(status="completed").first()
+        
+        if baseline_test and baseline_test.stimuli.exists():
+            # Use existing stimuli from completed test as template
+            baseline_stimuli = baseline_test.stimuli.all()
+            
+            # Get all digit stimuli (4-span and 5-span)
+            digit_4_span = list(baseline_stimuli.filter(stimulus_type="digit", span_length=4))
+            digit_5_span = list(baseline_stimuli.filter(stimulus_type="digit", span_length=5))
+            
+            # Get all mixed stimuli (4-span and 5-span)
+            mixed_4_span = list(baseline_stimuli.filter(stimulus_type="mixed", span_length=4))
+            mixed_5_span = list(baseline_stimuli.filter(stimulus_type="mixed", span_length=5))
+            
+            # Shuffle each group to randomize order
+            random.shuffle(digit_4_span)
+            random.shuffle(digit_5_span)
+            random.shuffle(mixed_4_span)
+            random.shuffle(mixed_5_span)
+            
+            # Combine: all 3 from 4-span + all 3 from 5-span for each type
+            digit_stimuli = digit_4_span + digit_5_span  # 6 total
+            mixed_stimuli = mixed_4_span + mixed_5_span  # 6 total
+            
+            # Create digit stimuli for this test (in randomized order)
+            for stim in digit_stimuli:
+                Stimulus.objects.create(
+                    test=test,
+                    stimulus_string=stim.stimulus_string,
+                    correct_answer=stim.correct_answer,
+                    stimulus_type=stim.stimulus_type,
+                    span_length=stim.span_length,
+                )
+            
+            # Create mixed stimuli for this test (in randomized order)
+            for stim in mixed_stimuli:
+                Stimulus.objects.create(
+                    test=test,
+                    stimulus_string=stim.stimulus_string,
+                    correct_answer=stim.correct_answer,
+                    stimulus_type=stim.stimulus_type,
+                    span_length=stim.span_length,
+                )
+        else:
+            # Fallback: manually create from fixture data if no completed tests exist
+            # Use EXACT fixture data - do not modify
+            digit_4_span_data = [
+                ("1478", "1478", "digit", 4),
+                ("9356", "3569", "digit", 4),
+                ("9732", "2379", "digit", 4),
+            ]
+            digit_5_span_data = [
+                ("35486", "34568", "digit", 5),
+                ("48973", "34789", "digit", 5),
+                ("14982", "12489", "digit", 5),
+            ]
+            mixed_4_span_data = [
+                ("A2L6", "26AL", "mixed", 4),
+                ("7LU5", "57LU", "mixed", 4),
+                ("F82I", "28FI", "mixed", 4),
+            ]
+            mixed_5_span_data = [
+                ("UC86F", "68CFU", "mixed", 5),
+                ("5KI76", "567IK", "mixed", 5),
+                ("2L48K", "248KL", "mixed", 5),
+            ]
+            
+            # Shuffle each group to randomize order
+            random.shuffle(digit_4_span_data)
+            random.shuffle(digit_5_span_data)
+            random.shuffle(mixed_4_span_data)
+            random.shuffle(mixed_5_span_data)
+            
+            # Combine in order: digit (4-span then 5-span), then mixed (4-span then 5-span)
+            all_stimuli = digit_4_span_data + digit_5_span_data + mixed_4_span_data + mixed_5_span_data
+            
+            for stimulus_string, correct_answer, stimulus_type, span_length in all_stimuli:
+                Stimulus.objects.create(
+                    test=test,
+                    stimulus_string=stimulus_string,
+                    correct_answer=correct_answer,
+                    stimulus_type=stimulus_type,
+                    span_length=span_length,
+                )
 
-    all_stimuli   = list(test.stimuli.all())
+    # Get all stimuli for this test in the order they were created (already randomized)
+    all_stimuli = list(test.stimuli.all())
+    
+    # Separate by type (maintains creation order which is already randomized)
     digit_stimuli = [s for s in all_stimuli if s.stimulus_type == "digit"]
     mixed_stimuli = [s for s in all_stimuli if s.stimulus_type == "mixed"]
+    
+    # Create mapping for templates
     stimulus_ids_keyed = {}
-    for i, s in enumerate(digit_stimuli, 1):
-        stimulus_ids_keyed[f"digit_stimuli_{i}"] = s.id
-    for i, s in enumerate(mixed_stimuli, 1):
-        stimulus_ids_keyed[f"mixed_stimuli_{i}"] = s.id
+    
+    # Map digit stimuli (should be 6)
+    for i, stim in enumerate(digit_stimuli, 1):
+        stimulus_ids_keyed[f"digit_stimuli_{i}"] = stim.id
+    
+    # Map mixed stimuli (should be 6)
+    for i, stim in enumerate(mixed_stimuli, 1):
+        stimulus_ids_keyed[f"mixed_stimuli_{i}"] = stim.id
 
     request.session["current_test_id"]           = test.id
     request.session["current_test_type"]          = "full"
     request.session["current_test_stimulus_ids"]  = stimulus_ids_keyed
+    request.session["current_stimulus_index"]     = 0
     request.session["lang"]                       = "en"
 
     return redirect("htmx:SelectLanguage")
@@ -1072,11 +1224,33 @@ def digit_stimuli_1(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        digit_stimuli = request.session.get("digit_stimuli", [])
+        if len(digit_stimuli) >= 1:
+            sequence = list(digit_stimuli[0]["sequence"])
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("digit_stimuli_1")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
+
     return render(request, "htmx/digit_stimuli_1.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 1,
+        "next_url": "htmx:digitStimuli1Response",
     })
 
 
@@ -1092,19 +1266,40 @@ def digit_stimuli_1_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def digit_stimuli_2(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        digit_stimuli = request.session.get("digit_stimuli", [])
+        if len(digit_stimuli) >= 2:
+            sequence = list(digit_stimuli[1]["sequence"])
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("digit_stimuli_2")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
 
     return render(request, "htmx/digit_stimuli_2.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 2,
+        "next_url": "htmx:digitStimuli2Response",
     })
-
-
 @require_GET
 def digit_stimuli_2_response(request):
     lang = request.session.get("lang", "en")
@@ -1117,19 +1312,40 @@ def digit_stimuli_2_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def digit_stimuli_3(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        digit_stimuli = request.session.get("digit_stimuli", [])
+        if len(digit_stimuli) >= 3:
+            sequence = list(digit_stimuli[2]["sequence"])
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("digit_stimuli_3")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
 
     return render(request, "htmx/digit_stimuli_3.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 3,
+        "next_url": "htmx:digitStimuli3Response",
     })
-
-
 @require_GET
 def digit_stimuli_3_response(request):
     lang = request.session.get("lang", "en")
@@ -1142,18 +1358,40 @@ def digit_stimuli_3_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def digit_stimuli_4(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        digit_stimuli = request.session.get("digit_stimuli", [])
+        if len(digit_stimuli) >= 4:
+            sequence = list(digit_stimuli[3]["sequence"])
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("digit_stimuli_4")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
 
     return render(request, "htmx/digit_stimuli_4.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 4,
+        "next_url": "htmx:digitStimuli4Response",
     })
-
 @require_GET
 def digit_stimuli_4_response(request):
     lang = request.session.get("lang", "en")
@@ -1166,19 +1404,40 @@ def digit_stimuli_4_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def digit_stimuli_5(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        digit_stimuli = request.session.get("digit_stimuli", [])
+        if len(digit_stimuli) >= 5:
+            sequence = list(digit_stimuli[4]["sequence"])
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("digit_stimuli_5")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
 
     return render(request, "htmx/digit_stimuli_5.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 5,
+        "next_url": "htmx:digitStimuli5Response",
     })
-
-
 @require_GET
 def digit_stimuli_5_response(request):
     lang = request.session.get("lang", "en")
@@ -1191,18 +1450,40 @@ def digit_stimuli_5_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def digit_stimuli_6(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        digit_stimuli = request.session.get("digit_stimuli", [])
+        if len(digit_stimuli) >= 6:
+            sequence = list(digit_stimuli[5]["sequence"])
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("digit_stimuli_6")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["1", "4", "7", "8"]  # Fallback
 
     return render(request, "htmx/digit_stimuli_6.html", {
         "lang": lang,
         "text": DIGIT_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 6,
+        "next_url": "htmx:digitStimuli6Response",
     })
-
 @require_GET
 def digit_stimuli_6_response(request):
     lang = request.session.get("lang", "en")
@@ -1214,7 +1495,6 @@ def digit_stimuli_6_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
 
 @require_GET
 def mixed_practice_instructions(request):
@@ -1294,13 +1574,34 @@ def mixed_stimuli_1(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
 
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        mixed_stimuli = request.session.get("mixed_stimuli", [])
+        if len(mixed_stimuli) >= 1:
+            sequence = list(mixed_stimuli[0]["sequence"])
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("mixed_stimuli_1")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
+
     return render(request, "htmx/mixed_stimuli_1.html", {
         "lang": lang,
         "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 1,
+        "next_url": "htmx:mixedStimuli1Response",
     })
-    
 @require_GET
 def mixed_stimuli_1_response(request):
     lang = request.session.get("lang", "en")
@@ -1313,18 +1614,40 @@ def mixed_stimuli_1_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def mixed_stimuli_2(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        mixed_stimuli = request.session.get("mixed_stimuli", [])
+        if len(mixed_stimuli) >= 2:
+            sequence = list(mixed_stimuli[1]["sequence"])
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("mixed_stimuli_2")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
 
     return render(request, "htmx/mixed_stimuli_2.html", {
         "lang": lang,
         "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 2,
+        "next_url": "htmx:mixedStimuli2Response",
     })
-
 @require_GET
 def mixed_stimuli_2_response(request):
     lang = request.session.get("lang", "en")
@@ -1337,18 +1660,40 @@ def mixed_stimuli_2_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def mixed_stimuli_3(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        mixed_stimuli = request.session.get("mixed_stimuli", [])
+        if len(mixed_stimuli) >= 3:
+            sequence = list(mixed_stimuli[2]["sequence"])
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("mixed_stimuli_3")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
 
     return render(request, "htmx/mixed_stimuli_3.html", {
         "lang": lang,
         "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 3,
+        "next_url": "htmx:mixedStimuli3Response",
     })
-
 @require_GET
 def mixed_stimuli_3_response(request):
     lang = request.session.get("lang", "en")
@@ -1361,18 +1706,40 @@ def mixed_stimuli_3_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def mixed_stimuli_4(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        mixed_stimuli = request.session.get("mixed_stimuli", [])
+        if len(mixed_stimuli) >= 4:
+            sequence = list(mixed_stimuli[3]["sequence"])
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("mixed_stimuli_4")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
 
     return render(request, "htmx/mixed_stimuli_4.html", {
         "lang": lang,
         "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 4,
+        "next_url": "htmx:mixedStimuli4Response",
     })
-    
 @require_GET
 def mixed_stimuli_4_response(request):
     lang = request.session.get("lang", "en")
@@ -1385,18 +1752,40 @@ def mixed_stimuli_4_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def mixed_stimuli_5(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        mixed_stimuli = request.session.get("mixed_stimuli", [])
+        if len(mixed_stimuli) >= 5:
+            sequence = list(mixed_stimuli[4]["sequence"])
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("mixed_stimuli_5")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
 
     return render(request, "htmx/mixed_stimuli_5.html", {
         "lang": lang,
         "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 5,
+        "next_url": "htmx:mixedStimuli5Response",
     })
-
 @require_GET
 def mixed_stimuli_5_response(request):
     lang = request.session.get("lang", "en")
@@ -1409,18 +1798,40 @@ def mixed_stimuli_5_response(request):
         "current_theme": current_theme,
     })
 
+
 @require_GET
 def mixed_stimuli_6(request):
     lang = request.session.get("lang", "en")
     current_theme = get_current_theme(request)
+
+    # Check if this is an independent test
+    if request.session.get("independent_test"):
+        # Get from session array
+        mixed_stimuli = request.session.get("mixed_stimuli", [])
+        if len(mixed_stimuli) >= 6:
+            sequence = list(mixed_stimuli[5]["sequence"])
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
+    else:
+        # Get from database (doctor-created test)
+        stimulus_ids = request.session.get("current_test_stimulus_ids", {})
+        stimulus_id = stimulus_ids.get("mixed_stimuli_6")
+        
+        if stimulus_id:
+            stimulus = get_object_or_404(Stimulus, id=stimulus_id)
+            sequence = list(stimulus.stimulus_string)
+        else:
+            sequence = ["A", "2", "L", "6"]  # Fallback
 
     return render(request, "htmx/mixed_stimuli_6.html", {
         "lang": lang,
         "text": MIXED_TEXT[lang],
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
+        "sequence": json.dumps(sequence),
+        "stimulus_number": 6,
+        "next_url": "htmx:mixedStimuli6Response",
     })
-
 @require_GET
 def mixed_stimuli_6_response(request):
     lang = request.session.get("lang", "en")
@@ -1480,9 +1891,13 @@ def submit_independent_test_responses(request):
     if not isinstance(submitted_responses, list):
         return JsonResponse({"error": "Responses payload must be a list."}, status=400)
 
+    # Get stimuli from session
+    digit_stimuli = request.session.get("digit_stimuli", [])
+    mixed_stimuli = request.session.get("mixed_stimuli", [])
+    
     combined_stimuli = (
-        [{**stimulus, "stimulus_type": "digit"} for stimulus in DIGIT_STIMULI_DATA] +
-        [{**stimulus, "stimulus_type": "mixed"} for stimulus in MIXED_STIMULI_DATA]
+        [{**stimulus, "stimulus_type": "digit"} for stimulus in digit_stimuli] +
+        [{**stimulus, "stimulus_type": "mixed"} for stimulus in mixed_stimuli]
     )
 
     stimuli_map = {}

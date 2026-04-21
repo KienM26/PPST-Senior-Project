@@ -38,13 +38,13 @@ stimuli_data = [
     ("48973", "34789", "digit", 5),
     ("14982", "12489", "digit", 5),
     # four span mixed
-    ("A2L6", "26AL", "mixed", 4),
-    ("7LU5", "57LU", "mixed", 4),
+    ("A2H6", "26AH", "mixed", 4),
+    ("7DF5", "57DF", "mixed", 4),
     ("F82I", "28FI", "mixed", 4),
     # five span mixed
-    ("UC86F", "68CFU", "mixed", 5),
-    ("5KI76", "567IK", "mixed", 5),
-    ("2L48K", "248KL", "mixed", 5),
+    ("GC86F", "68CFG", "mixed", 5),
+    ("5BI76", "567BI", "mixed", 5),
+    ("2A48C", "248AC", "mixed", 5),
 ]
 
 
