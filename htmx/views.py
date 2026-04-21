@@ -420,19 +420,19 @@ def start_independent_test(request):
         random.shuffle(mixed_4_span)
         random.shuffle(mixed_5_span)
         
-        # Create stimuli arrays with proper key format for independent test
+        # Create stimuli arrays with keys matching the template format
         digit_stimuli = []
-        for stim in (digit_4_span + digit_5_span):
+        for idx, stim in enumerate(digit_4_span + digit_5_span, 1):
             digit_stimuli.append({
-                "key": f"digit_{stim.stimulus_string}",
+                "key": f"digit_stimuli_{idx}",  # Use template-compatible keys
                 "sequence": stim.stimulus_string,
                 "correct_answer": stim.correct_answer,
             })
         
         mixed_stimuli = []
-        for stim in (mixed_4_span + mixed_5_span):
+        for idx, stim in enumerate(mixed_4_span + mixed_5_span, 1):
             mixed_stimuli.append({
-                "key": f"mixed_{stim.stimulus_string}",
+                "key": f"mixed_stimuli_{idx}",  # Use template-compatible keys
                 "sequence": stim.stimulus_string,
                 "correct_answer": stim.correct_answer,
             })
@@ -466,17 +466,17 @@ def start_independent_test(request):
         random.shuffle(mixed_5_span_data)
         
         digit_stimuli = []
-        for seq, ans in (digit_4_span_data + digit_5_span_data):
+        for idx, (seq, ans) in enumerate(digit_4_span_data + digit_5_span_data, 1):
             digit_stimuli.append({
-                "key": f"digit_{seq}",
+                "key": f"digit_stimuli_{idx}",  # Use template-compatible keys
                 "sequence": seq,
                 "correct_answer": ans,
             })
         
         mixed_stimuli = []
-        for seq, ans in (mixed_4_span_data + mixed_5_span_data):
+        for idx, (seq, ans) in enumerate(mixed_4_span_data + mixed_5_span_data, 1):
             mixed_stimuli.append({
-                "key": f"mixed_{seq}",
+                "key": f"mixed_stimuli_{idx}",  # Use template-compatible keys
                 "sequence": seq,
                 "correct_answer": ans,
             })
@@ -1252,8 +1252,6 @@ def digit_stimuli_1(request):
         "stimulus_number": 1,
         "next_url": "htmx:digitStimuli1Response",
     })
-
-
 @require_GET
 def digit_stimuli_1_response(request):
     lang = request.session.get("lang", "en")
@@ -1265,8 +1263,6 @@ def digit_stimuli_1_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def digit_stimuli_2(request):
     lang = request.session.get("lang", "en")
@@ -1311,8 +1307,6 @@ def digit_stimuli_2_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def digit_stimuli_3(request):
     lang = request.session.get("lang", "en")
@@ -1357,8 +1351,6 @@ def digit_stimuli_3_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def digit_stimuli_4(request):
     lang = request.session.get("lang", "en")
@@ -1403,8 +1395,6 @@ def digit_stimuli_4_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def digit_stimuli_5(request):
     lang = request.session.get("lang", "en")
@@ -1449,8 +1439,6 @@ def digit_stimuli_5_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def digit_stimuli_6(request):
     lang = request.session.get("lang", "en")
@@ -1495,7 +1483,6 @@ def digit_stimuli_6_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
 @require_GET
 def mixed_practice_instructions(request):
     lang = request.session.get("lang", "en")
@@ -1613,8 +1600,6 @@ def mixed_stimuli_1_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def mixed_stimuli_2(request):
     lang = request.session.get("lang", "en")
@@ -1659,8 +1644,6 @@ def mixed_stimuli_2_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def mixed_stimuli_3(request):
     lang = request.session.get("lang", "en")
@@ -1705,8 +1688,6 @@ def mixed_stimuli_3_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def mixed_stimuli_4(request):
     lang = request.session.get("lang", "en")
@@ -1751,8 +1732,6 @@ def mixed_stimuli_4_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def mixed_stimuli_5(request):
     lang = request.session.get("lang", "en")
@@ -1797,8 +1776,6 @@ def mixed_stimuli_5_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
-
 @require_GET
 def mixed_stimuli_6(request):
     lang = request.session.get("lang", "en")
@@ -1843,7 +1820,6 @@ def mixed_stimuli_6_response(request):
         "lang_info": LANGUAGE_INFO[lang],
         "current_theme": current_theme,
     })
-
 @require_GET
 def exit(request):
     lang = request.session.get("lang", "en")
