@@ -37,8 +37,8 @@
         </section>
         <div class="results-page-shell">
             <p class="results-page-subtitle"> Completed:
-                {% if test.completed_date %}
-                {{ test.completed_date }}
+                {% if result.created_at %}
+                {{ result.created_at }}
                 {% else %}
                 --
                 {% endif %}</p>
