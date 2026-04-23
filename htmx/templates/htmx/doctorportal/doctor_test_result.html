@@ -102,13 +102,22 @@
             <section class="results-section">
                 <h2 class="section-heading">Performance Charts</h2>
                 <div class="analytics-grid">
+                    <!-- Chart 1: Accuracy Comparison (Patient vs Age Group) -->
                     <div class="chart-box">
-                        <h3 class="chart-title">Success Performance Statistics By Age Group</h3>
-                        <canvas id="successAgeChart"></canvas>
+                        <h3 class="chart-title">Overall Accuracy Comparison</h3>
+                        <canvas id="accuracyComparisonChart"></canvas>
                     </div>
+
+                    <!-- Chart 2: Completion Time Breakdown -->
                     <div class="chart-box">
-                        <h3 class="chart-title">Completion Time Comparison</h3>
-                        <canvas id="completionChart"></canvas>
+                        <h3 class="chart-title">Time Performance</h3>
+                        <canvas id="timeBreakdownChart"></canvas>
+                    </div>
+
+                    <!-- Chart 3: Performance by Stimulus Type -->
+                    <div class="chart-box">
+                        <h3 class="chart-title">Accuracy by Stimulus Type</h3>
+                        <canvas id="stimulusTypeChart"></canvas>
                     </div>
                 </div>
             </section>
@@ -119,44 +128,129 @@
     <script>
         const ageGroupLabel = "{{ age_group_label }}";
 
-        // Success by Age Group Chart
-        const successAgeCtx = document.getElementById('successAgeChart').getContext('2d');
-        new Chart(successAgeCtx, {
-            type: 'bar',
+        // Chart 1: Accuracy Comparison - Doughnut Chart (Blue shades)
+        const accuracyCtx = document.getElementById('accuracyComparisonChart').getContext('2d');
+        new Chart(accuracyCtx, {
+            type: 'doughnut',
             data: {
-                labels: [ageGroupLabel],
+                labels: ['Patient', 'Age Group Average'],
                 datasets: [{
-                    label: 'Success by Age Group',
-                    data: [{{ avg_accuracy|default_if_none:"0" }}],
-                    backgroundColor: '#77d887'
+                    label: 'Accuracy (%)',
+                    data: [
+                        {% if result %}{{ result.accuracy|floatformat:1 }}{% else %}0{% endif %},
+                        {% if avg_accuracy != "--" %}{{ avg_accuracy }}{% else %}0{% endif %}
+                    ],
+                    backgroundColor: ['#1f7ea5', '#4bb7d8'],
+                    borderColor: ['#1a6d8f', '#3fa3c2'],
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, max: 100 } }
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 10 }
+                        }
+                    }
+                }
             }
         });
 
-        // Completion Time Comparison Chart
-        const completionCtx = document.getElementById('completionChart').getContext('2d');
-        new Chart(completionCtx, {
+        // Chart 2: Time Performance - Horizontal Bar Chart (Blue gradient)
+        const timeCtx = document.getElementById('timeBreakdownChart').getContext('2d');
+        new Chart(timeCtx, {
             type: 'bar',
             data: {
-                labels: ['Patient', ageGroupLabel],
+                labels: ['Patient', 'Age Group Avg'],
                 datasets: [{
                     label: 'Completion Time (seconds)',
                     data: [
                         {% if result %}{{ result.total_time }}{% else %}0{% endif %} / 1000,
                         {{ avg_completion|default_if_none:"0" }} / 1000
                     ],
-                    backgroundColor: ['#66c7e3', '#73d7df']
+                    backgroundColor: ['#355c7d', '#1f7ea5'],
+                    borderColor: ['#2a4a63', '#1a6d8f'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: { size: 11 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Seconds'
+                        },
+                        ticks: {
+                            font: { size: 10 }
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: Performance by Stimulus Type - Vertical Bar Chart (Light blue shades)
+        const stimulusCtx = document.getElementById('stimulusTypeChart').getContext('2d');
+        new Chart(stimulusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Digit Stimuli', 'Mixed Stimuli'],
+                datasets: [{
+                    label: 'Accuracy (%)',
+                    data: [
+                        {{ patient_digit_accuracy|default:"0" }},
+                        {{ patient_mixed_accuracy|default:"0" }}
+                    ],
+                    backgroundColor: ['#4bb7d8', '#7ed6e8'],
+                    borderColor: ['#3fa3c2', '#6dc4db'],
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: { size: 11 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: 10 }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            },
+                            font: { size: 10 }
+                        }
+                    }
+                }
             }
         });
     </script>
