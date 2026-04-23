@@ -2216,31 +2216,19 @@ def format_ms(ms):
 @login_required
 def doctor_test_result(request, test_id):
     test = get_object_or_404(Test, id=test_id)
-
-    # Fetch the related Results object safely
     result = getattr(test, 'results', None)
-
-    # Compute age group
     age_group_label = get_age_group(test.test_taker_age)
 
-    # Handle "60+" safely
+    # Get age group tests
     if "+" in age_group_label:
         age_min = int(age_group_label.replace("+", ""))
-        age_group_tests = Test.objects.filter(
-            test_taker_age__gte=age_min,
-            status='completed'
-        )
+        age_group_tests = Test.objects.filter(test_taker_age__gte=age_min, status='completed')
     else:
         age_min, age_max = map(int, age_group_label.split('-'))
-        age_group_tests = Test.objects.filter(
-            test_taker_age__gte=age_min,
-            test_taker_age__lte=age_max,
-            status='completed'
-        )
+        age_group_tests = Test.objects.filter(test_taker_age__gte=age_min, test_taker_age__lte=age_max, status='completed')
 
-    # Pull completed results only
+    # Calculate age group averages
     completed_results = [t.results for t in age_group_tests if hasattr(t, 'results')]
-
     if completed_results:
         avg_accuracy = round(sum(r.accuracy for r in completed_results) / len(completed_results), 1)
         avg_completion = round(sum(r.total_time for r in completed_results) / len(completed_results), 1)
@@ -2254,23 +2242,46 @@ def doctor_test_result(request, test_id):
         avg_correct = "--"
         avg_incorrect = "--"
 
+    # Calculate stimulus type breakdown for Chart 3
+    patient_digit_correct = 0
+    patient_digit_incorrect = 0
+    patient_mixed_correct = 0
+    patient_mixed_incorrect = 0
+    
+    if result:
+        responses = Response.objects.filter(test=test).select_related('stimulus')
+        for resp in responses:
+            if resp.stimulus.stimulus_type == 'digit':
+                if resp.is_correct:
+                    patient_digit_correct += 1
+                else:
+                    patient_digit_incorrect += 1
+            elif resp.stimulus.stimulus_type == 'mixed':
+                if resp.is_correct:
+                    patient_mixed_correct += 1
+                else:
+                    patient_mixed_incorrect += 1
+    
+    patient_digit_total = patient_digit_correct + patient_digit_incorrect
+    patient_mixed_total = patient_mixed_correct + patient_mixed_incorrect
+    patient_digit_accuracy = round((patient_digit_correct / patient_digit_total * 100), 1) if patient_digit_total > 0 else 0
+    patient_mixed_accuracy = round((patient_mixed_correct / patient_mixed_total * 100), 1) if patient_mixed_total > 0 else 0
+
     context = {
         "test": test,
         "result": result,
         "age_group_label": age_group_label,
-
         "avg_accuracy": avg_accuracy,
         "avg_completion": avg_completion,
         "avg_response": avg_response,
         "avg_correct": avg_correct,
         "avg_incorrect": avg_incorrect,
-
-        # Display-friendly formatted values
         "patient_completion_display": format_ms(result.total_time) if result else "--",
         "avg_completion_display": format_ms(avg_completion) if avg_completion is not None else "--",
-
         "patient_response_display": format_ms(result.response_time) if result else "--",
         "avg_response_display": format_ms(avg_response) if avg_response is not None else "--",
+        "patient_digit_accuracy": patient_digit_accuracy,
+        "patient_mixed_accuracy": patient_mixed_accuracy,
     }
 
     return render(request, "htmx/doctorportal/doctor_test_result.html", context)
