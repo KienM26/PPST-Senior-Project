@@ -1,6 +1,10 @@
 import csv
-import random
 import json
+import random
+import re
+import string
+
+from datetime import date, timedelta
 
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
@@ -12,8 +16,6 @@ from django.db.models import Avg
 
 from database.models import Latency, Response, Results, Stimulus, Test
 
-from datetime import date, timedelta
-import json
 
 from django.contrib.auth import authenticate, login, logout
 from database.models import Doctor
@@ -23,10 +25,7 @@ from django.utils.dateparse import parse_datetime
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-import re
 
-import random
-import string
 
 USED_STIMULI = set()
 
@@ -2215,7 +2214,7 @@ def format_ms(ms):
 
 @login_required
 def doctor_test_result(request, test_id):
-    test = get_object_or_404(Test, id=test_id)
+    test = get_object_or_404(Test, id=test_id, doctor=request.user)
     result = getattr(test, 'results', None)
     age_group_label = get_age_group(test.test_taker_age)
 
@@ -2288,7 +2287,7 @@ def doctor_test_result(request, test_id):
 
 @login_required
 def doctor_test_result_csv(request, test_id):
-    test = get_object_or_404(Test, id=test_id)
+    test = get_object_or_404(Test, id=test_id, doctor=request.user)
     result = getattr(test, "results", None)  # link to Results
 
     # Determine age group dynamically
