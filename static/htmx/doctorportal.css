@@ -311,7 +311,28 @@ body.login-page .main-content {
 .error-message li {
     margin-bottom: 5px;
 }
+/* Create account page only */
+.create-account-image {
+    position: relative;
+    overflow: visible;
+    background: transparent;
+}
 
+.create-account-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: calc(100% + 120px);
+    height: 100%;
+
+    object-fit: cover;
+    object-position: 43% center;
+
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
 
 /* CREATE TEST PAGE */
 .create-test-layout {
@@ -709,3 +730,10 @@ body.login-page .main-content {
 
 /* =========================
    END OF TEST RESULTS PAGE
+   */
+.site-footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 0.9rem;
+}
