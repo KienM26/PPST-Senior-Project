@@ -17,7 +17,7 @@
   <li>Install dependencies:  <b>pip install django</b></li>
   <li>Check for migrations:  <b>python manage.py makemigrations</b></li> 
   <li>Migrate:  <b>python manage.py migrate</b></li>
-  <li>Install the fixture (test data):  <b>python manage.py shell < fixture.py (in a git-bash shell) </b></li>
+  <li>Install the fixture (test data):  <b>python manage.py shell < fixture.py</b> (in a git-bash shell) </li>
   <li>Run the project (either from the command line using  <b>python manage.py runserver</b>) or from an IDE such as Visual Studio Code</li>
-  <li>Open your broswer and go to: localhost:8000/htmx/home</li>
+  <li>Open your broswer and go to: <b>localhost:8000/htmx/home<b></li>
   </ol>
