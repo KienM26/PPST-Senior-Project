@@ -1,5 +1,5 @@
-# djangoproject
-<h3>Django project template</h3>
+# Team 4 Philadelphia Point Span Test
+<h3>PPST</h3>
 
 
 **Installation instructions**
@@ -17,7 +17,7 @@
   <li>Install dependencies:  <b>pip install django</b></li>
   <li>Check for migrations:  <b>python manage.py makemigrations</b></li> 
   <li>Migrate:  <b>python manage.py migrate</b></li>
-  <li>Install the fixture (test data):  <b>python manage.py shell < fixture.py</b></li>
+  <li>Install the fixture (test data):  <b>python manage.py shell < fixture.py (in a git-bash shell) </b></li>
   <li>Run the project (either from the command line using  <b>python manage.py runserver</b>) or from an IDE such as Visual Studio Code</li>
-  <li>TEST: http://127.0.0.1:8000/basic/compute/5</li>
+  <li>Open your broswer and go to: localhost:8000/htmx/home</li>
   </ol>
